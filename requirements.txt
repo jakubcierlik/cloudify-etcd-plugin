@@ -1,0 +1,4 @@
+-e git+https://github.com/cloudify-incubator/cloudify-plugins-tools.git@0.1.4#egg=cloudify-plugins-tools
+
+cloudify-common>=4.6
+netaddr
