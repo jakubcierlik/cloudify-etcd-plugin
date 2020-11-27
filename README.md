@@ -1,1 +1,1 @@
-# cloudify-openstack-plugin
+# cloudify-etcd-plugin

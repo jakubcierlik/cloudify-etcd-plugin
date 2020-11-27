@@ -7,13 +7,13 @@ plugins:
 dsl_definitions:
   client_config: &client_config
     client_config:
-      type: cloudify.types.etcd.ClientConfig
+      type: cloudify.datatypes.etcd.ClientConfig
       description: Etcd key-value store client configuration.
-      required: false
+      required: true
 
 data_types:
 
-  cloudify.types.etcd.ClientConfig:
+  cloudify.datatypes.etcd.ClientConfig:
     properties:
       host:
         type: string
@@ -48,12 +48,35 @@ data_types:
           but will override other values in the client config.
         default: {}
 
+  cloudify.datatypes.etcd.resourceconfig.KeyValuePair:
+    properties:
+      key:
+        description: The key of the key-value pair.
+        type: string
+        required: true
+      value:
+        description: The key of the key-value pair.
+        type: string
+        required: true
+
+
 node_types:
 
-  cloudify.nodes.openstack.NetworkBase:
-    derived_from: cloudify.nodes.Network
+  cloudify.nodes.etcd.Base:
+    derived_from: cloudify.nodes.Compute
     properties:
-      <<: *external_resource
-      <<: *create_if_missing
       <<: *client_config
 
+  cloudify.nodes.etcd.KeyValuePair:
+    derived_from: cloudify.nodes.etcd.Base
+    properties:
+      resource_config:
+        type: cloudify.datatypes.etcd.resourceconfig.KeyValuePair
+        required: true
+      use_existing_resource:
+        description: Whether to create new resource or fetch existing
+        default: false
+    # interfaces:
+    #   cloudify.interfaces.lifecycle:
+    #     create: etcd.etcd_plugin.keyvaluepair.create
+    #     delete: etcd.etcd_plugin.keyvaluepair.delete

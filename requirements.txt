@@ -2,3 +2,4 @@
 
 cloudify-common>=4.6
 netaddr
+etcd3
