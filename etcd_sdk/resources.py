@@ -1,8 +1,8 @@
+# Local imports
 from etcd_sdk.common import EtcdResource
 
 
 # TODO: add support for watching keys, lock, maybe members and alarms?
-# TODO: refactor lease entity
 class EtcdKeyValuePair(EtcdResource):
     resource_type = 'keyvaluepair'
 
@@ -86,6 +86,7 @@ class EtcdKeyValuePair(EtcdResource):
             'Attempting to create lease with {}'.format(lease_id_str)
         )
         response = self.connection.lease(ttl, lease_id=lease_id)
+        self.config['lease'] = response
         self.logger.debug(
             'Created lease with result: {}'.format(response)
         )
@@ -104,6 +105,16 @@ class EtcdKeyValuePair(EtcdResource):
 
     def refresh_lease(self, lease_obj):
         lease_obj.refresh()
+
+    def watch(self, key):
+        self.logger.debug(
+            'Started watching key: {}'.format(key)
+        )
+        events_iterator, cancel = self.connection.watch(key)
+        self.logger.debug(
+            'Stopped watching key: {}'.format(key)
+        )
+        return events_iterator, cancel
 
     def delete(self, key, prev_kv=False, return_response=False):
         self.logger.debug(

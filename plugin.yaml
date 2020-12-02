@@ -55,9 +55,14 @@ data_types:
         type: string
         required: true
       value:
-        description: The key of the key-value pair.
+        description: The value of the key-value pair.
         type: string
         required: true
+      lease:
+        description: >
+          All keys attached to this lease will be expired and deleted if
+          the lease expires.
+        required: false
 
 
 node_types:
