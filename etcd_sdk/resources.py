@@ -2,7 +2,7 @@
 from etcd_sdk.common import EtcdResource
 
 
-# TODO: add support for watching keys, lock, maybe members and alarms?
+# TODO: add support for lock, maybe members and alarms?
 class EtcdKeyValuePair(EtcdResource):
     resource_type = 'keyvaluepair'
 
@@ -11,9 +11,11 @@ class EtcdKeyValuePair(EtcdResource):
             'Creating (putting) etcd key-value pair with parameters: {}'
             .format(self.config)
         )
+        key = self.config.get('key')
+        value = self.config.get('value')
         response = self.connection.put(
-            key=self.config.get('key'),
-            value=self.config.get('value'),
+            key=key,
+            value=value,
             lease=lease,
             prev_kv=prev_kv
             )
@@ -21,7 +23,7 @@ class EtcdKeyValuePair(EtcdResource):
         self.logger.info(
             'Created key-value pair with result: {}'.format(response)
         )
-        return response
+        return key, value
 
     def list_all(self, sort_order=None, sort_target='key'):
         response = self.connection.get_all(
@@ -116,7 +118,8 @@ class EtcdKeyValuePair(EtcdResource):
         )
         return events_iterator, cancel
 
-    def delete(self, key, prev_kv=False, return_response=False):
+    def delete(self, prev_kv=False, return_response=False):
+        key = self.config.get('key')
         self.logger.debug(
             'Attempting to delete the key: {}'.format(key)
         )

@@ -10,6 +10,6 @@ setup(
     license='LICENSE',
     zip_safe=False,
     packages=find_packages(exclude=['tests*']),
-    install_requires=['cloudify-common>=4.4',
+    install_requires=['cloudify-common>=5.0.5',
                       'etcd3'],
-    test_requires=['mock', 'requests-mock'])
+)

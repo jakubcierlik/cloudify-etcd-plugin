@@ -1,28 +1,26 @@
 import unittest
 
-from etcd_plugin.resources.kv.kv import KeyValue
-
 
 class KeyValueTestCase(unittest.TestCase):
     def test_create(self):
         # arrange
-        kv = KeyValue()
+
         # mock put
 
         # act
-        kv.create('foo', 'bar')
+        # kv.create('foo', 'bar')
 
         # assert
         pass
 
     def test_create_ephemeral(self):
         # arrange
-        kv = KeyValue()
+        # kv = KeyValue()
         # mock put
-        lease = ...
+        # lease = ...
 
         # act
-        kv.create('foo', 'bar', lease=lease)
+        # kv.create('foo', 'bar', lease=lease)
 
         # assert
         pass
@@ -41,4 +39,3 @@ class KeyValueTestCase(unittest.TestCase):
 
     def test_transaction(self):
         pass
-
