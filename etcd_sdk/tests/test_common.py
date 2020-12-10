@@ -13,7 +13,7 @@ class EtcdCommonBase(unittest.TestCase):
     def setUp(self):
         super(EtcdCommonBase, self).setUp()
 
-    def test_openstack_resource_instance(self):
+    def test_etcd_resource_instance(self):
         resource = EtcdResource(
             client_config={'host': 'localhost'},
             resource_config={'name': 'foo-name',

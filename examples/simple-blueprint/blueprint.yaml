@@ -1,0 +1,28 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - https://cloudify.co/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-etcd-plugin
+
+inputs:
+  # key:
+  #   type: string
+  # value:
+  #   type: string
+
+dsl_definitions:
+  client_config: &client_config
+    host: ''
+    port: 2379
+
+node_templates:
+
+  example-key-value-pair:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: /example
+        value: value

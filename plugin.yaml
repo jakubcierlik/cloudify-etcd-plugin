@@ -41,12 +41,6 @@ data_types:
         required: false
       grpc_options:
         required: false
-        default: {}
-      kwargs:
-        description: >
-          A dictionary of keys and values that is not validated
-          but will override other values in the client config.
-        default: {}
 
   cloudify.datatypes.etcd.resourceconfig.KeyValuePair:
     properties:
@@ -64,7 +58,6 @@ data_types:
           the lease expires.
         required: false
 
-
 node_types:
 
   cloudify.nodes.etcd.Base:
@@ -78,10 +71,7 @@ node_types:
       resource_config:
         type: cloudify.datatypes.etcd.resourceconfig.KeyValuePair
         required: true
-      use_existing_resource:
-        description: Whether to create new resource or fetch existing
-        default: false
-    # interfaces:
-    #   cloudify.interfaces.lifecycle:
-    #     create: etcd.etcd_plugin.keyvaluepair.create
-    #     delete: etcd.etcd_plugin.keyvaluepair.delete
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: etcd.etcd_plugin.keyvaluepair.create
+        delete: etcd.etcd_plugin.keyvaluepair.delete
