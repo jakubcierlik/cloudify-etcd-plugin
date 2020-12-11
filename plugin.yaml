@@ -97,5 +97,5 @@ node_types:
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: etcd.etcd_plugin.watchkey.create
+        create: etcd.etcd_plugin.watchkey.watch
         delete: etcd.etcd_plugin.watchkey.delete

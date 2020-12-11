@@ -7,7 +7,7 @@ from etcd_sdk.resources import WatchKey
 
 
 @with_etcd_resource(WatchKey)
-def create(etcd_resource):
+def watch(etcd_resource):
     """
     Create a watch for the particular key.
     :param etcd_resource: Instance of etcd watch key resource
