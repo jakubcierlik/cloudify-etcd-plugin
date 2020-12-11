@@ -1,0 +1,8 @@
+starting_key: /start
+starting_value: run
+key: /example_key
+value: example_value
+key_to_watch_1: /watch1
+expected_value_1: ok
+key_to_watch_2: /watch2
+expected_value_2: ok

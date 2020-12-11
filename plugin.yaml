@@ -58,6 +58,19 @@ data_types:
           the lease expires.
         required: false
 
+  cloudify.datatypes.etcd.resourceconfig.WatchKey:
+    properties:
+      key:
+        description: The key to watch.
+        type: string
+        required: true
+      condition:
+        description: >
+          A string that stops watching the key once it is encountered.
+        type: string
+        required: true
+
+
 node_types:
 
   cloudify.nodes.etcd.Base:
@@ -75,3 +88,14 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: etcd.etcd_plugin.keyvaluepair.create
         delete: etcd.etcd_plugin.keyvaluepair.delete
+
+  cloudify.nodes.etcd.WatchKey:
+    derived_from: cloudify.nodes.etcd.Base
+    properties:
+      resource_config:
+        type: cloudify.datatypes.etcd.resourceconfig.WatchKey
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: etcd.etcd_plugin.watchkey.create
+        delete: etcd.etcd_plugin.watchkey.delete

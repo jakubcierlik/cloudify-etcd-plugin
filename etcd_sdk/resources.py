@@ -19,7 +19,6 @@ class EtcdKeyValuePair(EtcdResource):
             lease=lease,
             prev_kv=prev_kv
             )
-        # TODO: add some check if the creation was successful
         self.logger.info(
             'Created key-value pair with result: {}'.format(response)
         )
@@ -108,16 +107,6 @@ class EtcdKeyValuePair(EtcdResource):
     def refresh_lease(self, lease_obj):
         lease_obj.refresh()
 
-    def watch(self, key):
-        self.logger.debug(
-            'Started watching key: {}'.format(key)
-        )
-        events_iterator, cancel = self.connection.watch(key)
-        self.logger.debug(
-            'Stopped watching key: {}'.format(key)
-        )
-        return events_iterator, cancel
-
     def delete(self, prev_kv=False, return_response=False):
         key = self.config.get('key')
         self.logger.debug(
@@ -144,3 +133,26 @@ class EtcdKeyValuePair(EtcdResource):
             'Deleted key-value pairs with prefix: "{}"'.format(prefix)
         )
         return response
+
+
+class WatchKey(EtcdResource):
+    resource_type = 'watchkey'
+
+    def watch(self):
+        key = self.config.get('key')
+        condition = self.config.get('condition')
+        self.logger.debug(
+            'Started watching key: {}. Expected value: {}'
+            .format(key, condition)
+        )
+        events_iterator, cancel = self.connection.watch(key)
+        for event in events_iterator:
+            self.logger.debug(
+                'Event value: {}'.format(event.value.decode('utf-8'))
+            )
+            if event.value.decode('utf-8') == condition:
+                cancel()
+        self.logger.debug(
+            'Stopped watching key: {}'.format(key)
+        )
+        return True

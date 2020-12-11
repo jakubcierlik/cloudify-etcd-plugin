@@ -5,15 +5,15 @@ imports:
   - plugin:cloudify-etcd-plugin
 
 inputs:
-  # key:
-  #   type: string
-  # value:
-  #   type: string
+  key:
+    type: string
+  value:
+    type: string
 
 dsl_definitions:
   client_config: &client_config
-    host: ''
-    port: 2379
+    host: { get_secret: etcd_host }
+    port: { get_secret: etcd_port }
 
 node_templates:
 
@@ -24,5 +24,5 @@ node_templates:
       agent_config:
         install_method: none
       resource_config:
-        key: /example
-        value: value
+        key: { get_input: key }
+        value: { get_input: value }
