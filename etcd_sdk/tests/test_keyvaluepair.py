@@ -41,7 +41,8 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
 
         self.fake_client.get = mock.MagicMock(return_value=(value, metadata))
 
-        response_value, response_metadata = self.keyvaluepair_instance.get('test_key')
+        response_value, response_metadata = \
+            self.keyvaluepair_instance.get('test_key')
         self.assertEqual(response_value, value)
         self.assertEqual(response_metadata.version, 1)
 
@@ -135,7 +136,8 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
         Response = namedtuple('Response', 'header deleted')
         response = Response(Header(2), 4L)
 
-        self.fake_client.get_prefix = mock.MagicMock(return_value=keyvaluepair_list)
+        self.fake_client.get_prefix = \
+            mock.MagicMock(return_value=keyvaluepair_list)
         self.fake_client.delete_prefix = mock.MagicMock(return_value=response)
 
         response = self.keyvaluepair_instance.delete_prefix('test_key')
