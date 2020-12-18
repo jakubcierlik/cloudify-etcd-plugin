@@ -23,14 +23,21 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
             'value': b'test_value',
         }
 
-        Header = namedtuple('Header', 'revision')
-        Response = namedtuple('Response', 'header')
-        response = Response(Header(1))
+        Lease = namedtuple('Lease', 'id ttl')
+        lease = Lease(1234L, 10L)
 
         self.keyvaluepair_instance.config = config
-        self.fake_client.put = mock.MagicMock(return_value=response)
+        self.fake_client.put = mock.MagicMock()
 
-        returned_key, returned_value = self.keyvaluepair_instance.create()
+        returned_key, returned_value = \
+            self.keyvaluepair_instance.create(lease=lease, prev_kv=True)
+
+        self.fake_client.put.assert_called_with(
+            key='test_key',
+            value='test_value',
+            lease=Lease(1234L, 10L),
+            prev_kv=True
+        )
         self.assertEqual(returned_key, 'test_key')
         self.assertEqual(returned_value, 'test_value')
 
@@ -43,6 +50,7 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
 
         response_value, response_metadata = \
             self.keyvaluepair_instance.get('test_key')
+
         self.assertEqual(response_value, value)
         self.assertEqual(response_metadata.version, 1)
 
@@ -54,7 +62,15 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
         self.fake_client.get_all = \
             mock.MagicMock(return_value=keyvaluepair_list)
 
-        response = self.keyvaluepair_instance.list_all()
+        response = self.keyvaluepair_instance.list_all(
+            sort_order='ascend',
+            sort_target='create'
+        )
+
+        self.fake_client.get_all.assert_called_with(
+            sort_order='ascend',
+            sort_target='create'
+        )
         self.assertEqual(len(response), 2)
 
     def test_get_prefix_keyvaluepairs(self):
@@ -66,7 +82,17 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
         self.fake_client.get_prefix = \
             mock.MagicMock(return_value=keyvaluepair_list)
 
-        response = self.keyvaluepair_instance.get_prefix('test_key')
+        response = self.keyvaluepair_instance.get_prefix(
+            'test_key',
+            sort_order='descend',
+            sort_target='version'
+        )
+
+        self.fake_client.get_prefix.assert_called_with(
+            'test_key',
+            sort_order='descend',
+            sort_target='version'
+        )
         self.assertEqual(len(response), 2)
 
     def test_get_range_keyvaluepairs(self):
@@ -80,8 +106,19 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
         self.fake_client.get_range = \
             mock.MagicMock(return_value=keyvaluepair_list)
 
-        response = self.keyvaluepair_instance.get_range('test_key1',
-                                                        'test_key5')
+        response = self.keyvaluepair_instance.get_range(
+            'test_key1',
+            'test_key5',
+            sort_order='descend',
+            sort_target='mod'
+        )
+
+        self.fake_client.get_range.assert_called_with(
+            'test_key1',
+            'test_key5',
+            sort_order='descend',
+            sort_target='mod'
+        )
         self.assertEqual(len(response), 4)
 
     def test_create_lease(self):
@@ -118,10 +155,12 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
         self.keyvaluepair_instance.config = config
         self.fake_client.delete = mock.MagicMock(return_value=True)
 
-        response = self.keyvaluepair_instance.delete(return_response=False)
+        response = self.keyvaluepair_instance.delete(prev_kv=True,
+                                                     return_response=True)
+
         self.fake_client.delete.assert_called_with('test_key',
-                                                   prev_kv=False,
-                                                   return_response=False)
+                                                   prev_kv=True,
+                                                   return_response=True)
         self.assertTrue(response)
 
     def test_delete_prefix(self):
@@ -166,13 +205,13 @@ class WatchKeyTestCase(base.EtcdSDKTestBase):
                 Event('bar1'),
                 Event('bar2'),
                 Event('test_value'),
-            ].__iter__()
+        ].__iter__()
         cancel_func = mock.MagicMock()
 
         self.watchkey_instance.config = config
         self.fake_client.watch = mock.MagicMock(
                 return_value=(events_iterator, cancel_func)
-            )
+        )
 
         returned = self.watchkey_instance.watch()
 
