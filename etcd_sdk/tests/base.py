@@ -18,6 +18,7 @@ class EtcdSDKTestBase(unittest.TestCase):
     def get_etcd_connections(self):
         return {
             'keyvaluepair': self._fake_keyvaluepair,
+            'watchkey': self._fake_watchkey,
         }
 
     @property
@@ -41,4 +42,8 @@ class EtcdSDKTestBase(unittest.TestCase):
         self.connection.revoke_lease = self._gen_etcd_sdk_error()
         self.connection.delete = self._gen_etcd_sdk_error()
         self.connection.delete_prefix = self._gen_etcd_sdk_error()
+        return self.connection
+
+    def _fake_watchkey(self):
+        self.connection.watch = self._gen_etcd_sdk_error()
         return self.connection

@@ -4,7 +4,7 @@ import mock
 
 # Local imports
 from etcd_sdk.tests import base
-from etcd_sdk.resources import EtcdKeyValuePair
+from etcd_sdk.resources import EtcdKeyValuePair, WatchKey
 
 
 class KeyValuePairTestCase(base.EtcdSDKTestBase):
@@ -31,8 +31,8 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
         self.fake_client.put = mock.MagicMock(return_value=response)
 
         returned_key, returned_value = self.keyvaluepair_instance.create()
-        self.assertEquals(returned_key, 'test_key')
-        self.assertEquals(returned_value, 'test_value')
+        self.assertEqual(returned_key, 'test_key')
+        self.assertEqual(returned_value, 'test_value')
 
     def test_get_keyvaluepair(self):
         Metadata = namedtuple('Metadata', 'version')
@@ -93,8 +93,8 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
         self.fake_client.lease = mock.MagicMock(return_value=response)
 
         response = self.keyvaluepair_instance.create_lease(10)
-        self.assertEquals(response.id, 1234L)
-        self.assertEquals(response.ttl, 10L)
+        self.assertEqual(response.id, 1234L)
+        self.assertEqual(response.ttl, 10L)
 
     def test_revoke_lease(self):
         self.fake_client.revoke_lease = mock.MagicMock()
@@ -122,7 +122,7 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
         self.fake_client.delete.assert_called_with('test_key',
                                                    prev_kv=False,
                                                    return_response=False)
-        self.assertEquals(response, True)
+        self.assertTrue(response)
 
     def test_delete_prefix(self):
         keyvaluepair_list = [
@@ -142,4 +142,39 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
 
         response = self.keyvaluepair_instance.delete_prefix('test_key')
 
-        self.assertEquals(response.deleted, 4L)
+        self.assertEqual(response.deleted, 4L)
+
+
+class WatchKeyTestCase(base.EtcdSDKTestBase):
+    def setUp(self):
+        super(WatchKeyTestCase, self).setUp()
+        self.fake_client = self.generate_fake_etcd_connection('watchkey')
+        self.watchkey_instance = WatchKey(
+            client_config=self.client_config,
+            logger=mock.MagicMock()
+        )
+        self.watchkey_instance.connection = self.connection
+
+    def test_watch_cancelled(self):
+        config = {
+            'key': b'test_key',
+            'condition': b'test_value',
+        }
+
+        Event = namedtuple('Event', 'value')
+        events_iterator = [
+                Event('bar1'),
+                Event('bar2'),
+                Event('test_value'),
+            ].__iter__()
+        cancel_func = mock.MagicMock()
+
+        self.watchkey_instance.config = config
+        self.fake_client.watch = mock.MagicMock(
+                return_value=(events_iterator, cancel_func)
+            )
+
+        returned = self.watchkey_instance.watch()
+
+        self.assertTrue(returned)
+        cancel_func.assert_called_once()
