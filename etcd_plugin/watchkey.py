@@ -1,6 +1,3 @@
-# Third party imports
-from cloudify import ctx
-
 # Local imports
 from etcd_plugin.utils import with_etcd_resource
 from etcd_sdk.resources import WatchKey

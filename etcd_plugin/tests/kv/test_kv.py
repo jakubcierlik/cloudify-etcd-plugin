@@ -34,23 +34,10 @@ class KeyValuePairTestCase(EtcdTestBase):
         self.assertEqual(self._ctx.instance.runtime_properties['test_key'],
                          'test_value')
 
-    def test_create_ephemeral(self):
-        # arrange
-        # kv = KeyValue()
-        # mock put
-        # lease = ...
-
-        # act
-        # kv.create('foo', 'bar', lease=lease)
-
-        # assert
-        pass
-
     def test_delete(self, mock_connection):
         # arrange
         self._prepare_context_for_operation(
             test_name='KeyValuePairTestCase',
-            test_runtime_properties={'test_key': 'test_value'},
             ctx_operation_name='cloudify.interfaces.lifecycle.delete')
         mock_connection().delete = mock.MagicMock(return_value=True)
 
@@ -58,19 +45,6 @@ class KeyValuePairTestCase(EtcdTestBase):
         keyvaluepair.delete(etcd_resource=None)
 
         # assert
-        for attr in ['test_key',
-                     'test_value']:
-            self.assertNotIn(attr,
-                             self._ctx.instance.runtime_properties)
-
-    def test_delete_prefix(self):
-        pass
-
-    def test_get(self):
-        pass
-
-    def test_get_prefix(self):
-        pass
-
-    def test_transaction(self):
-        pass
+        mock_connection().delete.assert_called_with('test_key',
+                                                    prev_kv=mock.ANY,
+                                                    return_response=mock.ANY)
