@@ -1,16 +1,16 @@
-starting_key: /start
+starting_key: /amartus/test/start
 starting_value: run
 
-key_sd_wan_1: /amartus/sdwan1/example_key
+key_sd_wan_1: /amartus/test/sdwan1/example_key
 value_sd_wan_1: example_value_sdwan_1
-key_to_watch_1_sd_wan_1: /nefeli/sdwan1/watch1
+key_to_watch_1_sd_wan_1: /amartus/test/sdwan1/watch1
 expected_value_1_sd_wan_1: ok
-key_to_watch_2_sd_wan_1: /nefeli/sdwan1/watch2
+key_to_watch_2_sd_wan_1: /amartus/test/sdwan1/watch2
 expected_value_2_sd_wan_1: ok
 
-key_sd_wan_2: /amartus/sdwan2/example_key
+key_sd_wan_2: /amartus/test/sdwan2/example_key
 value_sd_wan_2: example_value_sdwan_2
-key_to_watch_1_sd_wan_2: /nefeli/sdwan2/watch1
+key_to_watch_1_sd_wan_2: /amartus/test/sdwan2/watch1
 expected_value_1_sd_wan_2: ok
-key_to_watch_2_sd_wan_2: /nefeli/sdwan2/watch2
+key_to_watch_2_sd_wan_2: /amartus/test/sdwan2/watch2
 expected_value_2_sd_wan_2: ok

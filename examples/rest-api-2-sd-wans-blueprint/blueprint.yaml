@@ -1,0 +1,149 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - https://cloudify.co/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-etcd-plugin
+  - plugin:cloudify-utilities-plugin
+
+inputs:
+  starting_key:
+    type: string
+  starting_value:
+    type: string
+  key_sd_wan_1:
+    type: string
+  value_sd_wan_1:
+    type: string
+  key_to_watch_1_sd_wan_1:
+    type: string
+  expected_value_1_sd_wan_1:
+    type: string
+  key_to_watch_2_sd_wan_1:
+    type: string
+  expected_value_2_sd_wan_1:
+    type: string
+  key_sd_wan_2:
+    type: string
+  value_sd_wan_2:
+    type: string
+  key_to_watch_1_sd_wan_2:
+    type: string
+  expected_value_1_sd_wan_2:
+    type: string
+  key_to_watch_2_sd_wan_2:
+    type: string
+  expected_value_2_sd_wan_2:
+    type: string
+  rest_endpoint:
+    type: string
+
+dsl_definitions:
+  client_config: &client_config
+    host: { get_secret: etcd_host }
+    port: { get_secret: etcd_port }
+
+node_templates:
+
+  starting-node:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: starting_key }
+        condition: { get_input: starting_value }
+
+  rest-test-node:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [{ get_input: rest_endpoint }]
+      # port: 80
+      # ssl: false
+      port: 443
+      ssl: true
+      # verify: { get_input: rest_endpoint_cert_path }
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/simple-rest-api-request.yaml
+
+  example-key-value-pair-sd-wan-1:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_sd_wan_1 }
+        value: { get_input: value_sd_wan_1 }
+    relationships:
+      - type: cloudify.relationships.connected_to
+        target: starting-node
+
+  example-watch-key-1-sd-wan-1:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_to_watch_1_sd_wan_1 }
+        condition: { get_input: expected_value_1_sd_wan_1 }
+    relationships:
+      - type: cloudify.relationships.connected_to
+        target: example-key-value-pair-sd-wan-1
+
+  example-watch-key-2-sd-wan-1:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_to_watch_2_sd_wan_1 }
+        condition: { get_input: expected_value_2_sd_wan_1 }
+    relationships:
+      - type: cloudify.relationships.connected_to
+        target: example-watch-key-1-sd-wan-1
+  
+  example-key-value-pair-sd-wan-2:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_sd_wan_2 }
+        value: { get_input: value_sd_wan_2 }
+    relationships:
+      - type: cloudify.relationships.connected_to
+        target: starting-node
+
+  example-watch-key-1-sd-wan-2:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_to_watch_1_sd_wan_2 }
+        condition: { get_input: expected_value_1_sd_wan_2 }
+    relationships:
+      - type: cloudify.relationships.connected_to
+        target: example-key-value-pair-sd-wan-2
+
+  example-watch-key-2-sd-wan-2:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_to_watch_2_sd_wan_2 }
+        condition: { get_input: expected_value_2_sd_wan_2 }
+    relationships:
+      - type: cloudify.relationships.connected_to
+        target: example-watch-key-1-sd-wan-2
