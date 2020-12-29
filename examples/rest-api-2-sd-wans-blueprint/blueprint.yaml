@@ -54,6 +54,21 @@ node_templates:
         key: { get_input: starting_key }
         condition: { get_input: starting_value }
 
+  token:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [ { get_input: rest_endpoint } ]
+      port: 443
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/obtain-bearer-token.yaml
+            params:
+              CREDENTIALS_DIGEST: { get_secret: rest_credentials_digest }
+
   rest-test-node:
     type: cloudify.rest.Requests
     properties:
@@ -69,6 +84,11 @@ node_templates:
         start:
           inputs:
             template_file: templates/simple-rest-api-request.yaml
+            params:
+              TOKEN: { get_attribute: [ token, result_properties, token-content ] }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: token
 
   example-key-value-pair-sd-wan-1:
     type: cloudify.nodes.etcd.KeyValuePair
@@ -108,7 +128,7 @@ node_templates:
     relationships:
       - type: cloudify.relationships.connected_to
         target: example-watch-key-1-sd-wan-1
-  
+
   example-key-value-pair-sd-wan-2:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
