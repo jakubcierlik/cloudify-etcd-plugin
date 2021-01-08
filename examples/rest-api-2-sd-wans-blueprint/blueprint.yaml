@@ -76,18 +76,19 @@ node_templates:
   rest-test-node:
     type: cloudify.rest.Requests
     properties:
-      hosts: [{ get_input: rest_endpoint }]
-      # port: 80
-      # ssl: false
+      hosts:
+        - { get_input: rest_endpoint }
       port: 443
       ssl: true
-      # verify: { get_input: rest_endpoint_cert_path }
       verify: false
     interfaces:
       cloudify.interfaces.lifecycle:
         start:
           inputs:
             template_file: templates/simple-rest-api-request.yaml
+        stop:
+          inputs:
+            template_file: templates/simple-tear-down-request.yaml
 
   example-key-value-pair-sd-wan-1:
     type: cloudify.nodes.etcd.KeyValuePair
