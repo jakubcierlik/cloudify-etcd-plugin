@@ -1,0 +1,17 @@
+rest_calls:
+  - path: /vnms/sdwan/workflow/devices/MefPocDevice
+    # TODO: use name parameter for path
+    method: DELETE
+    headers:
+      Content-type: application/json
+      Accept: application/json
+      Authorization: Basic bWVmOlZlcnNhJDEyMzQ=
+      Cookie: JSESSIONID=4B515FC773453C6D386905C15D2C64CE
+    raw_payload: 
+    payload_format: raw
+    response_format: json
+    recoverable_codes: [400]
+    response_translation:
+      delete_device: [delete_device]
+    response_expectation:
+        # - ['id', '10']

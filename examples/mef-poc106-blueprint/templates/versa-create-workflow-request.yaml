@@ -1,0 +1,16 @@
+rest_calls:
+  - path: /vnms/sdwan/workflow/templates/template
+    method: POST
+    headers:
+      Content-type: application/json
+      Accept: application/json
+      Authorization: Basic bWVmOlZlcnNhJDEyMzQ=
+      Cookie: JSESSIONID=4B515FC773453C6D386905C15D2C64CE
+    raw_payload: templates/versa-create-workflow-request.json
+    payload_format: raw
+    response_format: json
+    recoverable_codes: [400]
+    response_translation:
+      create_workflow: [create_workflow]
+    response_expectation:
+        # - ['id', '10']

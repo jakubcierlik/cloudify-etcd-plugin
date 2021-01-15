@@ -1,0 +1,16 @@
+rest_calls:
+  - path: /nextgen/deviceGroup
+    method: POST
+    headers:
+      Content-type: application/json
+      Accept: application/json
+      Authorization: Basic bWVmOlZlcnNhJDEyMzQ=
+      Cookie: JSESSIONID=4B515FC773453C6D386905C15D2C64CE
+    raw_payload: templates/versa-create-devicegroup-request.json
+    payload_format: raw
+    response_format: json
+    recoverable_codes: [400]
+    response_translation:
+      create_devicegroup: [create_devicegroup]
+    response_expectation:
+        # - ['id', '10']

@@ -1,0 +1,24 @@
+{
+  "versanms.sdwan-device-workflow": {
+      "deviceName": "MefPocDevice",
+      "siteId": "265",
+      "orgName": "MEFPOC",
+      "serialNumber": "MefPocDevice",
+      "deviceGroup": "MefPocDeviceGroup",
+      "deploymentType": "physical",
+      "locationInfo": {
+          "state": "MA",
+          "country": "USA",
+          "longitude": "-71.05888",
+          "latitude": "42.360083",
+          "city": "Boston"
+      },
+      "urlztpBasedInfo": {
+          "enableIpv4": false,
+          "enableIpv4Dhcp": false,
+          "enableIpv6": false,
+          "enableIpv6Dhcp": false,
+          "enablePPPoE": false
+      }
+  }
+}

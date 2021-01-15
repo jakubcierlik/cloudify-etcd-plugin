@@ -1,3 +1,6 @@
+versa_endpoint: https://cloud202.versa-networks.com
+versa_port: 9182
+
 starting_key: /start
 starting_value: run
 
