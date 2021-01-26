@@ -1,10 +1,9 @@
 rest_calls:
-  - path: /v1/tenants/162187389399964099750194888486389256873/services/flexvnf/nf/versa_flexvnf_ucpe1/config
-    # TODO: check the path, use parameters
+  - path: /v1/tenants/75577886618737682833000713979859424131/services/flexvnf/nf/versa_flexvnf_ucpe1/config
     method: POST
     headers:
       Content-type: application/json
-      Authorization: 'Bearer {{versa_flexvnf_token}}'
+      Authorization: 'Bearer {{nefeli_token}}'
     raw_payload: templates/versa-post-pipeline-nf-config.json
     payload_format: raw
     response_format: json
