@@ -1,106 +1,62 @@
 {
-  "nodes": {
-    "versa_flexvnf_ucpe1": {
-      "site": "dellucpe21",
-      "nf": {
-        "disableScaling": false,
-        "maxInstances": 0,
-        "initialInstances": 1,
-        "overprovisionInstances": 0,
-        "minInstances": 1,
-        "catalogId": "versa_flexvnf_mefpoc_dellucpe21"
-      }
-    },
-    "dellucpe1": {
-      "site": "dellucpe21",
-      "port": {
-        "tunnel": "dellucpe21_untagged"
-      }
-    },
-    "dellucpe2": {
-      "site": "dellucpe21",
-      "port": {
-        "tunnel": "dellucpe21_wan"
-      }
-    },
-    "dellucpe3": {
-	    "site": "dellucpe21",
-	    "port": {
-		    "tunnel": "dell_vlan_232"
-	    }
-    },
-    "dellucpe4": {
-      "site": "dellucpe21",
-      "port": {
-        "tunnel": "dell_wan_231"
-      }
-    }
-  },
   "edges": [
     {
       "a": {
-        "node": "dellucpe2",
+        "node": "portLAN",
         "interface": ""
       },
-      "filter_ab": {
-        "bpf": ""
-      },
       "b": {
-        "node": "versa_flexvnf_ucpe1",
+        "node": "versa_flexvnf_file",
         "interface": "dp0"
       },
+      "filter_ab": {
+        "bpf": ""
+      },
       "filter_ba": {
         "bpf": ""
       }
     },
     {
       "a": {
-        "node": "dellucpe4",
-        "interface": ""
-      },
-      "filter_ab": {
-        "bpf": ""
-      },
-      "b": {
-        "node": "versa_flexvnf_ucpe1",
+        "node": "versa_flexvnf_file",
         "interface": "dp1"
       },
-      "filter_ba": {
-        "bpf": ""
-      }
-    },
-    {
-      "a": {
-        "node": "dellucpe1",
+      "b": {
+        "node": "portWAN",
         "interface": ""
       },
       "filter_ab": {
         "bpf": ""
-      },
-      "b": {
-        "node": "versa_flexvnf_ucpe1",
-        "interface": "dp2"
-      },
-      "filter_ba": {
-        "bpf": ""
-      }
-    },
-    {
-      "a": {
-        "node": "dellucpe3",
-        "interface": ""
-      },
-      "filter_ab": {
-        "bpf": ""
-      },
-      "b": {
-        "node": "versa_flexvnf_ucpe1",
-        "interface": "dp3"
       },
       "filter_ba": {
         "bpf": ""
       }
     }
   ],
+  "nodes": {
+    "versa_flexvnf_file": {
+      "site": "vader1",
+      "nf": {
+        "catalogId": "versa_flexvnf_file",
+        "disableScaling": false,
+        "initialInstances": 1,
+        "minInstances": 1,
+        "maxInstances": 0,
+        "overprovisionInstances": 0
+      }
+    },
+    "portLAN": {
+      "site": "vader1",
+      "port": {
+        "tunnel": "vader1_lan"
+      }
+    },
+    "portWAN": {
+      "site": "vader1",
+      "port": {
+        "tunnel": "vader1_wan"
+      }
+    }
+  },
   "maxRateKpps": 100000
 }
