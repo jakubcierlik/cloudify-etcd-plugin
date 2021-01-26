@@ -8,9 +8,13 @@ imports:
   - plugin:cloudify-azure-plugin
 
 inputs:
-  versa_endpoint:
+  versa_flexnfv_endpoint:
     type: string
-  versa_port:
+  versa_flexnfv_port:
+    type: string
+  versa_director_endpoint:
+    type: string
+  versa_director_port:
     type: string
   starting_key:
     type: string
@@ -77,11 +81,42 @@ node_templates:
         key: { get_input: starting_key }
         condition: { get_input: starting_value }
 
+  versa-flexnfv-deployment:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [{ get_input: versa_flexnfv_endpoint }]
+      port: { get_input: versa_flexnfv_port }
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/versa-flexvnf.yaml
+            params:
+              token: { get_secret: versa_flexvnf_token }
+
+  versa-post-pipeline-nf-config:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [{ get_input: versa_flexnfv_endpoint }]
+      port: { get_input: versa_flexnfv_port }
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/versa-post-pipeline-nf-config.yaml
+            params:
+              token: { get_secret: versa_flexvnf_token }
+              nf_id: { get_attribute: [versa-flexnfv-deployment, user] }
+
   versa-sd-wan-device-deployment:
     type: cloudify.rest.BunchRequests
     properties:
-      hosts: [{ get_input: versa_endpoint }]
-      port: { get_input: versa_port }
+      hosts: [{ get_input: versa_director_endpoint }]
+      port: { get_input: versa_director_port }
       ssl: true
       verify: false
     interfaces:
@@ -221,7 +256,7 @@ node_templates:
     - type: cloudify.relationships.contained_in
       target: aws_security_group
 
-  aws_security_group_rules_ingress_egress:
+  aws_security_group_rules_egress:
     type: cloudify.nodes.aws.ec2.SecurityGroupRuleEgress
     properties:
       client_config: *aws_client_config
