@@ -1,0 +1,223 @@
+{
+  "versanms.sdwan-device-workflow": {
+      "deviceName": "MefPocDevice",
+      "siteId": "265",
+      "orgName": "MEFPOC",
+      "serialNumber": "MefPocDevice",
+      "deviceGroup": "MefPocDeviceGroup",
+      "deploymentType": "physical",
+      "locationInfo": {
+          "state": "MA",
+          "country": "USA",
+          "longitude": "-71.05888",
+          "latitude": "42.360083",
+          "city": "Boston"
+      },
+      "postStagingTemplateInfo": {
+          "templateName": "MefPocWorkflowTemplate",
+          "templateData": {
+              "device-template-variable": {
+                  "template": "MefPocWorkflowTemplate",
+                  "variable-binding": {
+                      "attrs": [
+                          {
+                              "name": "{$v_tvi-0-175_-_Unit_0_Static_address__tunnelStaticAddress}",
+                              "value": "10.43.193.9/32",
+                              "isAutogeneratable": true,
+                              "isOverwritten": false
+                          },
+                          {
+                              "name": "{$v_Chassis_Id__sitesChassisId}",
+                              "value": "MefPocDevice",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_Site_Id__siteSiteID}",
+                              "value": "265",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_MEFPOC_Controller-2_Local_auth_email_identifier__IKELIdentifier}",
+                              "value": "MefPocDevice@MEFPOC.com",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_LAN1_IPv4__staticaddress}",
+                              "value": "192.168.150.1/24",
+                              "isAutogeneratable": false
+                          },
+                          {
+                              "name": "{$v_longitude__Idlongitude}",
+                              "value": "-71.05888",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_MEFPOC-Control-VR_87_Router_ID__vrRouteId}",
+                              "value": "10.43.193.9",
+                              "isAutogeneratable": true,
+                              "isOverwritten": false
+                          },
+                          {
+                              "name": "{$v_LAN2_IPv4__staticaddress}",
+                              "value": "192.168.151.2/24",
+                              "isAutogeneratable": false
+                          },
+                          {
+                              "name": "{$v_location__IdLocation}",
+                              "value": "Boston,MA, USA",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_MEFPOC_Controller-1_Local_auth_email_identifier__IKELIdentifier}",
+                              "value": "MefPocDevice@MEFPOC.com",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_MEFPOC_Controller-2_Local_auth_email_key__IKELKey}",
+                              "value": "0fFAML3kRHb9nO56",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_MEFPOC-Control-VR_87_Local_address__vrRouterAddress}",
+                              "value": "10.43.193.9",
+                              "isAutogeneratable": true,
+                              "isOverwritten": false
+                          },
+                          {
+                              "name": "{$v_latitude__IdLatitude}",
+                              "value": "42.360083",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_tvi-0-174_-_Unit_0_Static_address__tunnelStaticAddress}",
+                              "value": "10.43.129.9/32",
+                              "isAutogeneratable": true,
+                              "isOverwritten": false
+                          },
+                          {
+                              "name": "{$v_MEFPOC_Controller-1_Local_auth_email_key__IKELKey}",
+                              "value": "36R2MYBmQPrJj3v4",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_MEFPOC_Site_Name__sitesSiteName}",
+                              "value": "MefPocDevice",
+                              "isAutogeneratable": true
+                          },
+                          {
+                              "name": "{$v_identification__IdName}",
+                              "value": "MefPocDevice",
+                              "isAutogeneratable": true
+                          }
+                      ]
+                  }
+              },
+              "variableMetadata": [
+                  {
+                      "variable": "{$v_tvi-0-175_-_Unit_0_Static_address__tunnelStaticAddress}",
+                      "group": "Interfaces",
+                      "overlay": true,
+                      "type": "IPV4_IPV6_MASK"
+                  },
+                  {
+                      "variable": "{$v_Chassis_Id__sitesChassisId}",
+                      "group": "SDWAN",
+                      "overlay": false
+                  },
+                  {
+                      "variable": "{$v_Site_Id__siteSiteID}",
+                      "group": "SDWAN",
+                      "overlay": false
+                  },
+                  {
+                      "variable": "{$v_MEFPOC_Controller-2_Local_auth_email_identifier__IKELIdentifier}",
+                      "group": "IPSEC",
+                      "overlay": false
+                  },
+                  {
+                      "variable": "{$v_LAN1_IPv4__staticaddress}",
+                      "group": "Interfaces",
+                      "overlay": false,
+                      "type": "IPV4_MASK"
+                  },
+                  {
+                      "variable": "{$v_longitude__Idlongitude}",
+                      "group": "SDWAN",
+                      "overlay": false
+                  },
+                  {
+                      "variable": "{$v_MEFPOC-Control-VR_87_Router_ID__vrRouteId}",
+                      "group": "Virtual routers",
+                      "overlay": true,
+                      "type": "IPV4"
+                  },
+                  {
+                      "variable": "{$v_LAN2_IPv4__staticaddress}",
+                      "group": "Interfaces",
+                      "overlay": false,
+                      "type": "IPV4_MASK"
+                  },
+                  {
+                      "variable": "{$v_location__IdLocation}",
+                      "group": "SDWAN",
+                      "overlay": false
+                  },
+                  {
+                      "variable": "{$v_MEFPOC_Controller-1_Local_auth_email_identifier__IKELIdentifier}",
+                      "group": "IPSEC",
+                      "overlay": false
+                  },
+                  {
+                      "variable": "{$v_MEFPOC_Controller-2_Local_auth_email_key__IKELKey}",
+                      "group": "IPSEC",
+                      "overlay": false,
+                      "type": "STRING"
+                  },
+                  {
+                      "variable": "{$v_MEFPOC-Control-VR_87_Local_address__vrRouterAddress}",
+                      "group": "Virtual routers",
+                      "overlay": true,
+                      "type": "IPV4"
+                  },
+                  {
+                      "variable": "{$v_latitude__IdLatitude}",
+                      "group": "SDWAN",
+                      "overlay": false
+                  },
+                  {
+                      "variable": "{$v_tvi-0-174_-_Unit_0_Static_address__tunnelStaticAddress}",
+                      "group": "Interfaces",
+                      "overlay": true,
+                      "type": "IPV4_IPV6_MASK"
+                  },
+                  {
+                      "variable": "{$v_MEFPOC_Controller-1_Local_auth_email_key__IKELKey}",
+                      "group": "IPSEC",
+                      "overlay": false,
+                      "type": "STRING"
+                  },
+                  {
+                      "variable": "{$v_MEFPOC_Site_Name__sitesSiteName}",
+                      "group": "SDWAN",
+                      "overlay": false
+                  },
+                  {
+                      "variable": "{$v_identification__IdName}",
+                      "group": "SDWAN",
+                      "overlay": false
+                  }
+              ]
+          }
+      },
+      "serviceTemplateInfo": {
+          "templateData": {
+              "device-template-variable": [
+                  {
+                      "device": "MefPocDevice",
+                      "template": "MEFPOC-DataStore"
+                  }
+              ]
+          }
+      }
+  }
+}

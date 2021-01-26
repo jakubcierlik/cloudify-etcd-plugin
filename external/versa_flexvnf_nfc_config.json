@@ -1,0 +1,121 @@
+{
+    "credentials": "{
+        "NFConfig": {
+            "Username": "admin",
+            "Password": "versa123",
+            "Key": "",
+            "Port": "22",
+            "_comment": "BootTime: Maximium time in seconds for NF to boot",
+            "BootTime": "120",
+            "Plugin": "mneme:flexvnf-plugin",
+            "PluginArgs": [
+                "--local-id", "SDWAN-Branch@Versa.com",
+                "--local-key", "1234",
+                "--remote-key", "1234",
+                "--remote-id", "Controller-1-staging@Versa.com",
+                "--controller-ip-address", "52.12.227.43",
+                "--wan-port", "0",
+                "--serial-number", "uCPE-A",
+                "--wan-iface-address", "10.255.255.65/29",
+                "--wan-gateway-address", "10.255.255.70"
+            ]
+        },
+        "NFProbe": {
+            "Username": "admin",
+            "Password": "versa123",
+            "Key": "",
+            "Port": "22",
+            "Plugin": "mneme:flexvnf-plugin"
+        },
+        "NFLicense": {
+            "Username": "pangolin",
+            "Key": "",
+            "Port": "22",
+            "Plugin": ""
+        }
+    }",
+    "configTemplate": "{}",
+    "mapping": "",
+    "filter": "#!/usr/bin/env python3
+        """
+        filter.py
+        """
+        #
+        # Copyright (C) 2017-2018 Nefeli Networks Inc. - All Rights Reserved
+        # Proprietary and confidential.
+        #
+        # Notice: All information contained within is, and remains, the
+        # property of Nefeli Networks Inc.  and its suppliers or authorized
+        # agents, if any.  The intellectual and technical concepts contained
+        # herein are proprietary to Nefeli Networks Inc. and may be covered by
+        # U.S. and Foreign Patents, patents in process, and are protected by
+        # trade secret or copyright law.  Redistribution of this information
+        # or reproduction of this material is strictly forbidden unless prior
+        # written permission is obtained from Nefeli Networks Inc.
+        #
+        # For information regarding licensing, contact info@nefeli.io
+        #
+
+        # pylint: disable=invalid-name
+
+        import argparse
+        import importlib
+        import os.path
+        import re
+        import sys
+
+
+        def main():
+            """
+            Filter config file
+            cat config | filter.py --mapping mapping.py --total 3 --instance 0
+            """
+
+            parser = argparse.ArgumentParser()
+            parser.add_argument(
+                "--mapping", required=True, help="File containing template susbstitute values"
+            )
+            parser.add_argument("--total", required=True, help="Total number of NF instance")
+            parser.add_argument(
+                "--instance", required=True, help="Instance for which config is being generated"
+            )
+            args = parser.parse_args()
+
+            # The mapping file is an absolute  path name.
+            # Import requires basename without .py extension
+
+            mapping = importlib.import_module(  # pylint: disable=possibly-unused-variable
+                os.path.basename(args.mapping)[:-3]
+            )
+            total = int(args.total) - 1  # pylint: disable=possibly-unused-variable
+            instance = int(args.instance)  # pylint: disable=possibly-unused-variable
+
+            prog = re.compile("%.*%")
+            gs = globals()
+            ls = locals()
+
+            def replace(matchobj):
+                variable = matchobj.group(0)[1:-1]
+                command = "mapping.{}[total][instance]".format(variable)
+                variable = eval(command, gs, ls)  # pylint: disable=eval-used
+                return variable
+
+            for line in sys.stdin:
+                m = prog.sub(replace, line)
+                if m:
+                    line = m
+                print(line, end="")
+
+            sys.exit(0)
+
+
+        if __name__ == "__main__":
+            main()
+        ",
+    "rollback": "{
+        "Rollback": {
+            "_comment": "On config failure just signal failure to pangolin",
+            "Policy": "reboot"
+        }
+    }"
+}

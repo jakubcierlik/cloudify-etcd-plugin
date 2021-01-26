@@ -1,0 +1,136 @@
+{
+  "versanms.sdwan-template-workflow": {
+      "templateName": "MefPocWorkflowTemplate",
+      "templateType": "sdwan-post-staging",
+      "controllers": [
+          "Controller-1",
+          "Controller-2"
+      ],
+      "providerOrg": {
+          "name": "MEFPOC",
+          "statefulFW": false,
+          "nextGenFW": true
+      },
+      "analyticsCluster": "Analytics",
+      "deviceFirmfactor": "6",
+      "wanInterfaces": [
+          {
+              "interfaceName": "vni-0/0",
+              "pppoe": false,
+              "unitInfo": [
+                  {
+                      "subUnit": 0,
+                      "vlanId": 0,
+                      "networkName": "INET-1",
+                      "ipv4Static": false,
+                      "ipv4Dhcp": true,
+                      "ip6Static": false,
+                      "ipv6Dhcp": false,
+                      "allowSSH": false,
+                      "monitor": {},
+                      "linkPriority": null,
+                      "transportDomains": [
+                          "Internet"
+                      ]
+                  }
+              ]
+          },
+          {
+              "interfaceName": "vni-0/1",
+              "pppoe": false,
+              "unitInfo": [
+                  {
+                      "subUnit": 0,
+                      "vlanId": 0,
+                      "networkName": "INET-2",
+                      "ipv4Static": false,
+                      "ipv4Dhcp": true,
+                      "ip6Static": false,
+                      "ipv6Dhcp": false,
+                      "allowSSH": false,
+                      "monitor": {},
+                      "linkPriority": null,
+                      "transportDomains": [
+                          "Internet"
+                      ]
+                  }
+              ]
+          }
+      ],
+      "deviceType": "full-mesh",
+      "redundantPair": {
+          "enable": false
+      },
+      "lanInterfaces": [
+          {
+              "interfaceName": "vni-0/2",
+              "unitInfo": [
+                  {
+                      "subUnit": 0,
+                      "vlanId": 0,
+                      "networkName": "LAN1",
+                      "subOrganization": "MEFPOC",
+                      "ipv4Static": true,
+                      "ipv4Dhcp": false,
+                      "ipv4DhcpServer": false,
+                      "ip6Static": false,
+                      "ipv6Dhcp": false,
+                      "vrfName": "MEFPOC-LAN-VR",
+                      "zoneName": "",
+                      "routing": {
+                          "pim": false
+                      }
+                  }
+              ]
+          },
+          {
+              "interfaceName": "vni-0/3",
+              "unitInfo": [
+                  {
+                      "subUnit": 0,
+                      "vlanId": 0,
+                      "networkName": "LAN2",
+                      "subOrganization": "MEFPOC",
+                      "ipv4Static": true,
+                      "ipv4Dhcp": false,
+                      "ipv4DhcpServer": false,
+                      "ip6Static": false,
+                      "ipv6Dhcp": false,
+                      "vrfName": "MEFPOC-LAN-VR",
+                      "zoneName": "",
+                      "routing": {
+                          "pim": false
+                      }
+                  }
+              ]
+          }
+      ],
+      "TacacsPlusServers": [],
+      "RadiusServers": [],
+      "solutionTier": "Premier-Elite-SDWAN",
+      "bandwidth": 5000,
+      "customParams": [],
+      "isAnalyticsEnabled": true,
+      "isStaging": false,
+      "isPrimary": true,
+      "diaConfig": {
+          "loadBalance": true
+      },
+      "splitTunnels": [
+          {
+              "vrfName": "MEFPOC-LAN-VR",
+              "wanNetworkName": "INET-1",
+              "dia": "true",
+              "gateway": "false"
+          },
+          {
+              "vrfName": "MEFPOC-LAN-VR",
+              "wanNetworkName": "INET-2",
+              "dia": "true",
+              "gateway": "false"
+          }
+      ],
+      "siteToSiteTunnels": [],
+      "inBoundNats": []
+  }
+}

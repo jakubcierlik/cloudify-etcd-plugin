@@ -1,0 +1,17 @@
+rest_calls:
+  - path: /nextgen/deviceGroup/MefPocDeviceGroup
+    # TODO: use name parameter for path
+    method: DELETE
+    headers:
+      Content-type: application/json
+      Accept: application/json
+      Authorization: Basic bWVmOlZlcnNhJDEyMzQ=
+      Cookie: JSESSIONID=4B515FC773453C6D386905C15D2C64CE
+    raw_payload: 
+    payload_format: raw
+    response_format: json
+    recoverable_codes: [400]
+    response_translation:
+      delete_devicegroup: [delete_devicegroup]
+    response_expectation:
+        # - ['id', '10']

@@ -1,3 +1,8 @@
+versa_flexnfv_endpoint: https://127.0.0.1  # TBD
+versa_flexnfv_port: 443  # TBD
+versa_director_endpoint: https://cloud202.versa-networks.com
+versa_director_port: 9182
+
 starting_key: /start
 starting_value: run
 

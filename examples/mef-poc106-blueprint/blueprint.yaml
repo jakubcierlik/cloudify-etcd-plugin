@@ -1,0 +1,316 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - https://cloudify.co/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-etcd-plugin
+  - plugin:cloudify-utilities-plugin
+  - plugin:cloudify-aws-plugin
+  - plugin:cloudify-azure-plugin
+
+inputs:
+  versa_flexnfv_endpoint:
+    type: string
+  versa_flexnfv_port:
+    type: string
+  versa_director_endpoint:
+    type: string
+  versa_director_port:
+    type: string
+  starting_key:
+    type: string
+  starting_value:
+    type: string
+  key_sd_wan_1:
+    type: string
+  value_sd_wan_1:
+    type: string
+  key_to_watch_1_sd_wan_1:
+    type: string
+  expected_value_1_sd_wan_1:
+    type: string
+  key_to_watch_2_sd_wan_1:
+    type: string
+  expected_value_2_sd_wan_1:
+    type: string
+  key_sd_wan_2:
+    type: string
+  value_sd_wan_2:
+    type: string
+  key_to_watch_1_sd_wan_2:
+    type: string
+  expected_value_1_sd_wan_2:
+    type: string
+  key_to_watch_2_sd_wan_2:
+    type: string
+  expected_value_2_sd_wan_2:
+    type: string
+  rest_endpoint:
+    type: string
+  aws_vpc:
+    type: string
+  azure_location:
+    type: string
+    default: { get_secret: azure_location }
+
+dsl_definitions:
+
+  client_config: &client_config
+    host: { get_secret: etcd_host }
+    port: { get_secret: etcd_port }
+
+  aws_client_config: &aws_client_config
+    aws_access_key_id: { get_secret: aws_access_key_id }
+    aws_secret_access_key: { get_secret: aws_secret_access_key }
+    region_name: { get_secret: aws_region_name }
+
+  azure_client_config: &azure_client_config
+    subscription_id: { get_secret: azure_subscription_id }
+    tenant_id: { get_secret: azure_tenant_id }
+    client_id: { get_secret: azure_client_id }
+    client_secret: { get_secret: azure_client_secret }
+
+node_templates:
+
+  starting-node:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: starting_key }
+        condition: { get_input: starting_value }
+
+  versa-flexnfv-deployment:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [{ get_input: versa_flexnfv_endpoint }]
+      port: { get_input: versa_flexnfv_port }
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/versa-flexvnf.yaml
+            params:
+              token: { get_secret: versa_flexvnf_token }
+
+  versa-post-pipeline-nf-config:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [{ get_input: versa_flexnfv_endpoint }]
+      port: { get_input: versa_flexnfv_port }
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/versa-post-pipeline-nf-config.yaml
+            params:
+              token: { get_secret: versa_flexvnf_token }
+              nf_id: { get_attribute: [versa-flexnfv-deployment, user] }
+
+  versa-sd-wan-device-deployment:
+    type: cloudify.rest.BunchRequests
+    properties:
+      hosts: [{ get_input: versa_director_endpoint }]
+      port: { get_input: versa_director_port }
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            templates:
+            - template_file: templates/versa-create-workflow-request.yaml
+              save_to: versa_create_workflow_response
+            - template_file: templates/versa-deploy-workflow-request.yaml
+              save_to: versa_deploy_workflow_response
+            - template_file: templates/versa-create-devicegroup-request.yaml
+              save_to: versa_create_devicegroup_response
+            - template_file: templates/versa-create-device-request.yaml
+              save_to: versa_create_device_response
+            - template_file: templates/versa-deploy-device-request.yaml
+              save_to: versa_deploy_device_response
+        stop:
+          inputs:
+            templates:
+            - template_file: templates/versa-delete-device-request.yaml
+              save_to: versa_delete_device_response
+            - template_file: templates/versa-delete-devicegroup-request.yaml
+              save_to: versa_delete_devicegroup_response
+            - template_file: templates/versa-delete-workflow-request.yaml
+              save_to: versa_delete_workflow_response
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: starting-node
+
+  example-key-value-pair-sd-wan-1:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_sd_wan_1 }
+        value: { get_input: value_sd_wan_1 }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: versa-sd-wan-device-deployment
+
+  example-watch-key-1-sd-wan-1:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_to_watch_1_sd_wan_1 }
+        condition: { get_input: expected_value_1_sd_wan_1 }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: example-key-value-pair-sd-wan-1
+
+  example-watch-key-2-sd-wan-1:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_to_watch_2_sd_wan_1 }
+        condition: { get_input: expected_value_2_sd_wan_1 }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: example-watch-key-1-sd-wan-1
+  
+  example-key-value-pair-sd-wan-2:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_sd_wan_2 }
+        value: { get_input: value_sd_wan_2 }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: versa-sd-wan-device-deployment
+
+  example-watch-key-1-sd-wan-2:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_to_watch_1_sd_wan_2 }
+        condition: { get_input: expected_value_1_sd_wan_2 }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: example-key-value-pair-sd-wan-2
+
+  example-watch-key-2-sd-wan-2:
+    type: cloudify.nodes.etcd.WatchKey
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: { get_input: key_to_watch_2_sd_wan_2 }
+        condition: { get_input: expected_value_2_sd_wan_2 }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: example-watch-key-1-sd-wan-2
+
+  aws_security_group:
+    type: cloudify.nodes.aws.ec2.SecurityGroup
+    properties:
+      resource_config:
+        kwargs:
+          GroupName: security_group_poc_106
+          Description: Configured security group for POC-106 purposes
+          VpcId: { get_input: vpc }
+      client_config: *aws_client_config
+    relationships:
+    - type: cloudify.relationships.depends_on
+      target: example-watch-key-1-sd-wan-1
+    - type: cloudify.relationships.depends_on
+      target: example-watch-key-2-sd-wan-2
+
+  aws_security_group_rules_ingress:
+    type: cloudify.nodes.aws.ec2.SecurityGroupRuleIngress
+    properties:
+      client_config: *aws_client_config
+      resource_config:
+        IpPermissions:
+          - IpProtocol: tcp
+            FromPort: 22
+            ToPort: 22
+            UserIdGroupPairs:
+              - GroupId:
+                  get_attribute: [ aws_security_group, aws_resource_id ]
+    relationships:
+    - type: cloudify.relationships.contained_in
+      target: aws_security_group
+
+  aws_security_group_rules_egress:
+    type: cloudify.nodes.aws.ec2.SecurityGroupRuleEgress
+    properties:
+      client_config: *aws_client_config
+      resource_config:
+        IpPermissions:
+          - FromPort: 22
+            ToPort: 22
+            IpProtocol: tcp
+            UserIdGroupPairs:
+            - GroupId:
+                  get_attribute: [ aws_security_group, aws_resource_id ]
+    relationships:
+    - type: cloudify.relationships.contained_in
+      target: aws_security_group
+
+  # TODO: to be connected to NIC
+  azure_network_security_group:
+    type: cloudify.azure.nodes.network.NetworkSecurityGroup
+    properties:
+      name: security_group_poc_106
+      location: { get_input: azure_location }
+      azure_config: *azure_client_config
+      retry_after: 30
+      resource_config:
+        securityRules:
+        - name: ssh
+          properties:
+            description: SSH access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 22
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            priority: 100
+            access: Allow
+            direction: Inbound
+        - name: http
+          properties:
+            description: HTTP access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 80
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            priority: 101
+            access: Allow
+            direction: Inbound
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      name: resource_group_poc_106
+      location: { get_input: azure_location }
+      azure_config: *azure_client_config
