@@ -81,6 +81,21 @@ node_templates:
         key: { get_input: starting_key }
         condition: { get_input: starting_value }
 
+  nefeli-bearer-token:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [{ get_input: versa_flexnfv_endpoint }]
+      port: { get_input: versa_flexnfv_port }
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/nefeli-obtain-bearer-token.yaml
+            params:
+              credentials_digest: { get_secret: nefeli_credentials_digest }
+
   versa-flexnfv-deployment:
     type: cloudify.rest.Requests
     properties:
@@ -94,7 +109,10 @@ node_templates:
           inputs:
             template_file: templates/versa-flexvnf.yaml
             params:
-              token: { get_secret: versa_flexvnf_token }
+              nefeli_token: { get_attribute: [ nefeli-bearer-token, result_properties, token_content ] }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: token
 
   versa-post-pipeline-nf-config:
     type: cloudify.rest.Requests
@@ -109,8 +127,11 @@ node_templates:
           inputs:
             template_file: templates/versa-post-pipeline-nf-config.yaml
             params:
-              token: { get_secret: versa_flexvnf_token }
+              nefeli_token: { get_attribute: [ nefeli-bearer-token, result_properties, token_content ] }
               nf_id: { get_attribute: [versa-flexnfv-deployment, user] }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: token
 
   versa-sd-wan-device-deployment:
     type: cloudify.rest.BunchRequests
