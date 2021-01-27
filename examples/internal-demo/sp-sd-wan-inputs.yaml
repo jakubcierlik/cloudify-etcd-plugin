@@ -1,0 +1,2 @@
+sp_configuration_endpoint: https://10.10.10.10  # TBD
+sp_configuration_port: 443  # TBD

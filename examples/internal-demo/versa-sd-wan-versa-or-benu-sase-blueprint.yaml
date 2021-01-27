@@ -1,0 +1,163 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - https://cloudify.co/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-etcd-plugin
+  - plugin:cloudify-utilities-plugin
+  - plugin:cloudify-aws-plugin
+  - plugin:cloudify-azure-plugin
+
+inputs:
+  SASE_provider:
+    type: string
+    constraints:
+      - valid_values: [Versa SASE, Benu SASE]
+    description: |
+      SASE provider to be used.
+  security_profile:
+    type: string
+    constraints:
+      - valid_values:
+        - Remote Branch - AWS - Salesforce
+        - Remote Branch - Azure - Azure Functions
+        - Remote Branch - AWS - VPC#1
+        - Remote User - Limited Cloud
+    description: |
+      Provide the security profile to be used.
+  uCPE:
+    type: string
+    constraints:
+      - valid_values: [Site Amartus Cracow, Site Sparkle Rome]
+    description: |
+      Choose which uCPE should be used.
+
+dsl_definitions:
+
+  client_config: &client_config
+    host: { get_secret: etcd_host }
+    port: { get_secret: etcd_port }
+
+  aws_client_config: &aws_client_config
+    aws_access_key_id: { get_secret: aws_access_key_id }
+    aws_secret_access_key: { get_secret: aws_secret_access_key }
+    region_name: { get_secret: aws_region_name }
+
+node_templates:
+
+  versa-sd-wan-create-workflow:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: /amartus/versa_sd_wan/test/versa_create_workflow
+        value: created, host https://cloud202.versa-networks.com:9182
+
+  versa-sd-wan-deploy-workflow:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: /amartus/versa_sd_wan/test/versa_deploy_workflow
+        value: deployed, host https://cloud202.versa-networks.com:9182
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: versa-sd-wan-create-workflow
+
+  versa-sd-wan-create-devicegroup:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: /amartus/versa_sd_wan/test/versa_create_devicegroup
+        value: created, host https://cloud202.versa-networks.com:9182
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: versa-sd-wan-deploy-workflow
+
+  versa-sd-wan-create-device:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: /amartus/versa_sd_wan/test/versa_create_device
+        value: deployed, host https://cloud202.versa-networks.com:9182
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: versa-sd-wan-create-devicegroup
+
+  versa-sd-wan-deploy-device:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: /amartus/versa_sd_wan/test/versa_deploy_device
+        value: deployed, host https://cloud202.versa-networks.com:9182
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: versa-sd-wan-create-device
+
+
+  versa-flexnfv-deployment:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: /amartus/versa_sd_wan/test/versa_flexnfv_deployment
+        value: deployed, host https://10.10.10.10:443
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: versa-sd-wan-deploy-device
+
+  versa-post-pipeline-nf-config:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config:
+        key: /amartus/versa_sd_wan/test/versa_post_pipeline_nf_config
+        value: configured, host https://10.10.10.10:443
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: versa-flexnfv-deployment
+
+
+  aws_security_group:
+    type: cloudify.nodes.aws.ec2.SecurityGroup
+    properties:
+      resource_config:
+        GroupName: security_group_poc_106-demo-versa-sd-wan
+        Description: Configured security group for POC-106 purposes
+        VpcId: vpc-4c8f0a26
+      client_config: *aws_client_config
+    relationships:
+    - type: cloudify.relationships.depends_on
+      target: versa-post-pipeline-nf-config
+
+  aws_security_group_rules_ingress:
+    type: cloudify.nodes.aws.ec2.SecurityGroupRuleIngress
+    properties:
+      client_config: *aws_client_config
+      resource_config:
+        IpPermissions:
+          - IpProtocol: tcp
+            FromPort: 35
+            ToPort: 35
+            UserIdGroupPairs:
+              - GroupId:
+                  get_attribute: [ aws_security_group, aws_resource_id ]
+    relationships:
+    - type: cloudify.relationships.contained_in
+      target: aws_security_group
