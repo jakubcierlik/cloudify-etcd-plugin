@@ -7,5 +7,3 @@ rest_calls:
     raw_payload: templates/versa-flexvnf.json
     payload_format: raw
     response_format: json
-    response_translation:
-      deploy_flexvnf: [deploy_flexvnf]

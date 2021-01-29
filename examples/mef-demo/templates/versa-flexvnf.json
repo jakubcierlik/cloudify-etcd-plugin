@@ -1,0 +1,62 @@
+{
+  "edges": [
+    {
+      "a": {
+        "node": "portLAN",
+        "interface": ""
+      },
+      "b": {
+        "node": "versa_flexvnf_file",
+        "interface": "dp0"
+      },
+      "filter_ab": {
+        "bpf": ""
+      },
+      "filter_ba": {
+        "bpf": ""
+      }
+    },
+    {
+      "a": {
+        "node": "versa_flexvnf_file",
+        "interface": "dp1"
+      },
+      "b": {
+        "node": "portWAN",
+        "interface": ""
+      },
+      "filter_ab": {
+        "bpf": ""
+      },
+      "filter_ba": {
+        "bpf": ""
+      }
+    }
+  ],
+  "nodes": {
+    "versa_flexvnf_file": {
+      "site": "vader1",
+      "nf": {
+        "catalogId": "versa_flexvnf_file",
+        "disableScaling": false,
+        "initialInstances": 1,
+        "minInstances": 1,
+        "maxInstances": 0,
+        "overprovisionInstances": 0
+      }
+    },
+    "portLAN": {
+      "site": "vader1",
+      "port": {
+        "tunnel": "vader1_lan"
+      }
+    },
+    "portWAN": {
+      "site": "vader1",
+      "port": {
+        "tunnel": "vader1_wan"
+      }
+    }
+  },
+  "maxRateKpps": 100000
+}

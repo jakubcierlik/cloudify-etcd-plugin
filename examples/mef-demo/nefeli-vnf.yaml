@@ -1,0 +1,54 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - https://cloudify.co/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-utilities-plugin
+
+inputs:
+  SASE_provider:
+    type: string
+    constraints:
+      - valid_values: [Versa SASE, Benu SASE]
+    description: |
+      SASE provider to be used.
+
+dsl_definitions:
+
+  client_config: &client_config
+    host: { get_secret: etcd_host }
+    port: { get_secret: etcd_port }
+
+node_templates:
+
+  nefeli-bearer-token:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [{ get_secret: versa_flexnfv_endpoint }]
+      port: { get_secret: versa_flexnfv_port }
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/nefeli-obtain-bearer-token.yaml
+            params:
+              credentials_digest: { get_secret: nefeli_credentials_digest }
+
+  versa-flexnfv-deployment:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [{ get_secret: versa_flexnfv_endpoint }]
+      port: { get_secret: versa_flexnfv_port }
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/versa-flexvnf.yaml
+            params:
+              nefeli_token: { get_attribute: [ nefeli-bearer-token, result_properties, token_content ] }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: nefeli-bearer-token

@@ -5,13 +5,12 @@ imports:
   - plugin:cloudify-etcd-plugin
   - plugin:cloudify-utilities-plugin
   - plugin:cloudify-aws-plugin
-  - plugin:cloudify-azure-plugin
 
 inputs:
   SASE_provider:
     type: string
     constraints:
-      - valid_values: [Versa SASE, Benu SASE]
+      - valid_values: [Benu SASE]
     description: |
       SASE provider to be used.
   security_profile:

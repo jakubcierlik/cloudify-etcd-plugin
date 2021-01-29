@@ -5,7 +5,6 @@ imports:
   - plugin:cloudify-etcd-plugin
   - plugin:cloudify-utilities-plugin
   - plugin:cloudify-aws-plugin
-  - plugin:cloudify-azure-plugin
 
 inputs:
   SASE_provider:
@@ -51,7 +50,7 @@ node_templates:
       agent_config:
         install_method: none
       resource_config:
-        key: /amartus/versa_sd_wan/test/versa_create_workflow
+        key: /amartus/versa_sd_wan/versa_create_workflow
         value: created, host https://cloud202.versa-networks.com:9182
 
   versa-sd-wan-deploy-workflow:
@@ -61,7 +60,7 @@ node_templates:
       agent_config:
         install_method: none
       resource_config:
-        key: /amartus/versa_sd_wan/test/versa_deploy_workflow
+        key: /amartus/versa_sd_wan/versa_deploy_workflow
         value: deployed, host https://cloud202.versa-networks.com:9182
     relationships:
       - type: cloudify.relationships.depends_on
@@ -74,7 +73,7 @@ node_templates:
       agent_config:
         install_method: none
       resource_config:
-        key: /amartus/versa_sd_wan/test/versa_create_devicegroup
+        key: /amartus/versa_sd_wan/versa_create_devicegroup
         value: created, host https://cloud202.versa-networks.com:9182
     relationships:
       - type: cloudify.relationships.depends_on
@@ -87,7 +86,7 @@ node_templates:
       agent_config:
         install_method: none
       resource_config:
-        key: /amartus/versa_sd_wan/test/versa_create_device
+        key: /amartus/versa_sd_wan/versa_create_device
         value: deployed, host https://cloud202.versa-networks.com:9182
     relationships:
       - type: cloudify.relationships.depends_on
@@ -100,7 +99,7 @@ node_templates:
       agent_config:
         install_method: none
       resource_config:
-        key: /amartus/versa_sd_wan/test/versa_deploy_device
+        key: /amartus/versa_sd_wan/versa_deploy_device
         value: deployed, host https://cloud202.versa-networks.com:9182
     relationships:
       - type: cloudify.relationships.depends_on
@@ -114,7 +113,7 @@ node_templates:
       agent_config:
         install_method: none
       resource_config:
-        key: /amartus/versa_sd_wan/test/versa_flexnfv_deployment
+        key: /amartus/versa_sd_wan/versa_flexnfv_deployment
         value: deployed, host https://10.10.10.10:443
     relationships:
       - type: cloudify.relationships.depends_on
@@ -127,7 +126,7 @@ node_templates:
       agent_config:
         install_method: none
       resource_config:
-        key: /amartus/versa_sd_wan/test/versa_post_pipeline_nf_config
+        key: /amartus/versa_sd_wan/versa_post_pipeline_nf_config
         value: configured, host https://10.10.10.10:443
     relationships:
       - type: cloudify.relationships.depends_on

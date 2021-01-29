@@ -1,0 +1,22 @@
+{
+  "device-group": {
+      "name": "MefPocDeviceGroup",
+      "dg:organization": "MEFPOC",
+      "dg:enable-2factor-auth": false,
+      "dg:ca-config-on-branch-notification": false,
+      "dg:enable-staging-url": false,
+      "template-association": [
+          {
+              "organization": "MEFPOC",
+              "category": "DataStore",
+              "name": "MEFPOC-DataStore"
+          },
+          {
+              "organization": "MEFPOC",
+              "category": "Main",
+              "name": "MefPocWorkflowTemplate"
+          }
+      ],
+      "dg:poststaging-template": "MefPocWorkflowTemplate"
+  }
+}

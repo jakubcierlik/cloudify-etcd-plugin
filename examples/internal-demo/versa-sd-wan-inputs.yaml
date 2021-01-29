@@ -1,4 +1,0 @@
-versa_flexnfv_endpoint: https://10.10.10.10  # TBD
-versa_flexnfv_port: 443  # TBD
-versa_director_endpoint: https://cloud202.versa-networks.com
-versa_director_port: 9182
