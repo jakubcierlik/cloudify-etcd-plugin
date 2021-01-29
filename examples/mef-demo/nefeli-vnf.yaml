@@ -52,3 +52,22 @@ node_templates:
     relationships:
       - type: cloudify.relationships.depends_on
         target: nefeli-bearer-token
+
+  versa-post-pipeline-nf-config:
+    type: cloudify.rest.Requests
+    properties:
+      hosts: [ { get_secret: versa_flexnfv_endpoint } ]
+      port: { get_secret: versa_flexnfv_port }
+      ssl: true
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/versa-post-pipeline-nf-config.yaml
+            params:
+              nefeli_token: { get_attribute: [ nefeli-bearer-token, result_properties, token_content ] }
+              nf_id: { get_attribute: [ versa-flexnfv-deployment, user ] }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: versa-flexnfv-deployment
