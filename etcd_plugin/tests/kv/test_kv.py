@@ -34,6 +34,38 @@ class KeyValuePairTestCase(EtcdTestBase):
         self.assertEqual(self._ctx.instance.runtime_properties['test_key'],
                          'test_value')
 
+    def test_create_external_resource(self, mock_connection):
+        # arrange
+        properties = dict()
+        # Enable external resource
+        properties['use_external_resource'] = True
+
+        # Add node properties config to this dict
+        properties.update(self.node_properties)
+        # Reset resource config since we are going to use external resource
+        # and do not care about the resource config data
+        properties['resource_config'] = {
+            'name': 'test_ext_keyvaluepair',
+            'key': b'test_ext_key',
+            'value': b'test_ext_value',
+        }
+
+        # Prepare the context for create operation
+        self._prepare_context_for_operation(
+            test_name='ExternaleyValuePairTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.create',
+            test_properties=properties,
+            test_runtime_properties={
+                b'test_ext_key': b'test_ext_value',
+            })
+
+        # act
+        keyvaluepair.create(etcd_resource=None)
+
+        # assert
+        self.assertEqual(self._ctx.instance.runtime_properties['test_ext_key'],
+                         'test_ext_value')
+
     def test_delete(self, mock_connection):
         # arrange
         self._prepare_context_for_operation(
