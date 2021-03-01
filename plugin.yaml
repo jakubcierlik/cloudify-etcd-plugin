@@ -11,6 +11,18 @@ dsl_definitions:
       description: Etcd key-value store client configuration.
       required: true
 
+  external_resource: &external_resource
+    use_external_resource:
+      description: Indicate whether the resource exists or if Cloudify should create the resource, true if you are bringing an existing resource, false if you want cloudify to create it.
+      type: boolean
+      default: false
+
+  create_if_missing: &create_if_missing
+    create_if_missing:
+      type: boolean
+      default: false
+      description: If use_external_resource is ``true`` and the resource is missing,create it instead of failing.
+
 data_types:
 
   cloudify.datatypes.etcd.ClientConfig:
@@ -81,6 +93,8 @@ node_types:
   cloudify.nodes.etcd.KeyValuePair:
     derived_from: cloudify.nodes.etcd.Base
     properties:
+      <<: *external_resource
+      <<: *create_if_missing
       resource_config:
         type: cloudify.datatypes.etcd.resourceconfig.KeyValuePair
         required: true

@@ -39,7 +39,7 @@ class EtcdKeyValuePair(EtcdResource):
         )
         response = self.connection.get(key)
         self.logger.debug(
-            'Received value of: "{}": {}'.format(key, response)
+            'Received value of: "{}": {}'.format(key, str(response))
         )
         return response
 

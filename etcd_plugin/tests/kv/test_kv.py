@@ -1,4 +1,5 @@
 # Third party imports
+from collections import namedtuple
 import mock
 
 # Local imports
@@ -58,6 +59,10 @@ class KeyValuePairTestCase(EtcdTestBase):
             test_runtime_properties={
                 b'test_ext_key': b'test_ext_value',
             })
+        Metadata = namedtuple('Metadata', 'version')
+        metadata = Metadata(1L)
+        value = b'test_ext_value'
+        mock_connection().get = mock.MagicMock(return_value=(value, metadata))
 
         # act
         keyvaluepair.create(etcd_resource=None)

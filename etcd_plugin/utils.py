@@ -141,9 +141,12 @@ def lookup_remote_resource(_ctx, etcd_resource):
 
     try:
         # Get the remote resource
-        remote_resource = etcd_resource.get(
+        remote_resource_response = etcd_resource.get(
             get_key_from_resource_config(_ctx)
         )
+        # remote_resource_response is a tuple of (value, KVMetadata)
+        # with byte strings so conversion is needed
+        remote_resource = str(remote_resource_response[0])
     except etcd3.exceptions.Etcd3Exception as error:
         _, _, tb = sys.exc_info()
         # If external resource does not exist then try to create it instead
@@ -280,25 +283,21 @@ def use_external_resource(_ctx,
     if is_create or is_not_external_rel:
         return None
 
-    if remote_resource:
-        etcd_resource.resource_id = remote_resource.id
     # Just log message that we cannot delete resource since it is an
     # external resource
     if operation_name == CLOUDIFY_CREATE_OPERATION:
         _ctx.logger.info(
             'not creating resource {0}'
             ' since an external resource is being used'
-            ''.format(remote_resource.name))
-        _ctx.instance.runtime_properties[RESOURCE_ID] = remote_resource.id
-        if hasattr(remote_resource, 'name') and remote_resource.name:
-            etcd_resource.name = remote_resource.name
+            ''.format(remote_resource))
+        _ctx.instance.runtime_properties[RESOURCE_ID] = remote_resource
     # Just log message that we cannot delete resource since it is an
     # external resource
     elif operation_name == CLOUDIFY_DELETE_OPERATION:
         _ctx.logger.info(
             'not deleting resource {0}'
             ' since an external resource is being used'
-            ''.format(remote_resource.name))
+            ''.format(remote_resource))
 
     # Check if we need to run custom operation for already existed
     # resource for operation task
@@ -375,9 +374,12 @@ def set_external_resource(ctx_node, resource, target_operations):
     # 3. cloudify.interfaces.operations.update_project
     if is_external_resource(ctx_node):
         operation_name = get_current_operation()
-        remote_resource = resource.get(
+        remote_resource_response = resource.get(
             get_key_from_resource_config(ctx_node)
         )
+        # remote_resource_response is a tuple of (value, KVMetadata)
+        # with byte strings so conversion is needed
+        remote_resource = str(remote_resource_response[0])
         if operation_name in target_operations:
             ctx_node.instance.runtime_properties[ETCD_EXTERNAL_RESOURCE] \
                 = remote_resource
