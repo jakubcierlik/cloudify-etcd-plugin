@@ -140,8 +140,6 @@ node_templates:
   #   type: cloudify.nodes.etcd.KeyValuePair
   #   properties:
   #     client_config: *client_config
-  #     agent_config:
-  #       install_method: none
   #     resource_config:
   #       key: { get_input: key_sd_wan_1 }
   #       value: { get_input: value_sd_wan_1 }
@@ -153,8 +151,6 @@ node_templates:
   #   type: cloudify.nodes.etcd.WatchKey
   #   properties:
   #     client_config: *client_config
-  #     agent_config:
-  #       install_method: none
   #     resource_config:
   #       key: { get_input: key_to_watch_1_sd_wan_1 }
   #       condition: { get_input: expected_value_1_sd_wan_1 }
@@ -166,8 +162,6 @@ node_templates:
   #   type: cloudify.nodes.etcd.WatchKey
   #   properties:
   #     client_config: *client_config
-  #     agent_config:
-  #       install_method: none
   #     resource_config:
   #       key: { get_input: key_to_watch_2_sd_wan_1 }
   #       condition: { get_input: expected_value_2_sd_wan_1 }
@@ -179,8 +173,6 @@ node_templates:
   #   type: cloudify.nodes.etcd.KeyValuePair
   #   properties:
   #     client_config: *client_config
-  #     agent_config:
-  #       install_method: none
   #     resource_config:
   #       key: { get_input: key_sd_wan_2 }
   #       value: { get_input: value_sd_wan_2 }
@@ -192,8 +184,6 @@ node_templates:
   #   type: cloudify.nodes.etcd.WatchKey
   #   properties:
   #     client_config: *client_config
-  #     agent_config:
-  #       install_method: none
   #     resource_config:
   #       key: { get_input: key_to_watch_1_sd_wan_2 }
   #       condition: { get_input: expected_value_1_sd_wan_2 }
@@ -205,8 +195,6 @@ node_templates:
   #   type: cloudify.nodes.etcd.WatchKey
   #   properties:
   #     client_config: *client_config
-  #     agent_config:
-  #       install_method: none
   #     resource_config:
   #       key: { get_input: key_to_watch_2_sd_wan_2 }
   #       condition: { get_input: expected_value_2_sd_wan_2 }

@@ -33,8 +33,6 @@ node_templates:
     type: cloudify.nodes.etcd.WatchKey
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: { get_input: starting_key }
         condition: { get_input: starting_value }
@@ -43,8 +41,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: { get_input: key }
         value: { get_input: value }
@@ -56,8 +52,6 @@ node_templates:
     type: cloudify.nodes.etcd.WatchKey
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: { get_input: key_to_watch_1 }
         condition: { get_input: expected_value_1 }
@@ -69,8 +63,6 @@ node_templates:
     type: cloudify.nodes.etcd.WatchKey
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: { get_input: key_to_watch_2 }
         condition: { get_input: expected_value_2 }

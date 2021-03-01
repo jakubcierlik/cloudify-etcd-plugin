@@ -21,8 +21,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: { get_input: key }
         value: { get_input: value }

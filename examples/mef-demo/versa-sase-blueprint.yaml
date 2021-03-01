@@ -45,8 +45,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: /amartus/remote_user/test/create_configuration
         value: { concat: ['created for remote user: ', { get_input: remote_username } ] }
@@ -55,8 +53,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: /amartus/remote_user/test/deploy_configuration
         value: { concat: ['deployed for remote user: ', { get_input: remote_username } ] }

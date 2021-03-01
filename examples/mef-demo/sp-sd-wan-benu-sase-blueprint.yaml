@@ -47,8 +47,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: /amartus/sp_sd_wan/test/sp_create_workflow
         value: created, host https://20.20.20.20:443
@@ -57,8 +55,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: /amartus/sp_sd_wan/test/sp_deploy_workflow
         value: deployed, host https://20.20.20.20:443
@@ -70,8 +66,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: /amartus/sp_sd_wan/test/sp_sase_configuration
         value: configured
@@ -83,8 +77,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: /amartus/sp_sd_wan/test/sp_sase-deployment
         value: deployed

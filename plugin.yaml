@@ -86,7 +86,7 @@ data_types:
 node_types:
 
   cloudify.nodes.etcd.Base:
-    derived_from: cloudify.nodes.Compute
+    derived_from: cloudify.nodes.Root
     properties:
       <<: *client_config
 

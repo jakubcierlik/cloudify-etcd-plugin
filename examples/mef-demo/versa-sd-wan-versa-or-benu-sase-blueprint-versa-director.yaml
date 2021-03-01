@@ -95,8 +95,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: /amartus/versa_sd_wan/test/versa_flexnfv_deployment
         value: deployed, host https://10.10.10.10:443
@@ -108,8 +106,6 @@ node_templates:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:
       client_config: *client_config
-      agent_config:
-        install_method: none
       resource_config:
         key: /amartus/versa_sd_wan/test/versa_post_pipeline_nf_config
         value: configured, host https://10.10.10.10:443
