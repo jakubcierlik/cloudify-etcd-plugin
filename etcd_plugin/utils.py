@@ -94,7 +94,12 @@ def prepare_resource_instance(class_decl, _ctx, kwargs):
 
     # If this arg exists, user provide extra/optional configuration for
     # the defined node
-    extra_resource_config = resource_config.pop('kwargs', None)
+    CloudifyContext.logger.debug(
+        'Resource Config received: {0}'.format(str(resource_config))
+    )
+    extra_resource_config = None
+    if not isinstance(resource_config, list):
+        extra_resource_config = resource_config.pop('kwargs', None)
     if extra_resource_config:
         resource_config.update(extra_resource_config)
 
@@ -136,17 +141,23 @@ def lookup_remote_resource(_ctx, etcd_resource):
     RelationshipSubjectContext or CloudifyContext
     :param etcd_resource: Instance derived from "EtcdResource",
     it could be "EtcdKeyValuePair" or "WatchKey" ..etc
-    :return: etcd value stored remotely
+    :return: list of etcd values stored remotely
     """
 
     try:
         # Get the remote resource
-        remote_resource_response = etcd_resource.get(
-            get_key_from_resource_config(_ctx)
+        remote_resource_responses = map(
+            lambda x: etcd_resource.get(x),
+            get_keys_from_resource_config(_ctx)
         )
-        # remote_resource_response is a tuple of (value, KVMetadata)
+        # remote_resource_responses are tuples of (value, KVMetadata)
         # with byte strings so conversion is needed
-        remote_resource = str(remote_resource_response[0])
+        remote_resources = list(
+            map(
+                lambda x: str(x[0]),
+                remote_resource_responses
+            )
+        )
     except etcd3.exceptions.Etcd3Exception as error:
         _, _, tb = sys.exc_info()
         # If external resource does not exist then try to create it instead
@@ -159,7 +170,7 @@ def lookup_remote_resource(_ctx, etcd_resource):
             'Failure while trying to request '
             'etcd API: {}'.format(error.message),
             causes=[exception_to_error_cause(error, tb)])
-    return remote_resource
+    return remote_resources
 
 
 def is_external_resource(_ctx):
@@ -325,15 +336,21 @@ def use_external_resource(_ctx,
         return etcd_resource
 
 
-def get_key_from_resource_config(ctx_node):
+def get_keys_from_resource_config(ctx_node):
     """
     Get the key stored in resource config for the context
     :param ctx_node: This could be RelationshipSubjectContext
      or CloudifyContext instance depend if it is a normal relationship
      operation or node operation
-    :return: Key name
+    :return: Iterable with names of keys
     """
-    return ctx_node.node.properties.get('resource_config').get('key')
+    resource_config = ctx_node.node.properties.get('resource_config')
+    if isinstance(resource_config, list):
+        return map(
+            lambda x: x.get('kvpair').get('key'),
+            resource_config
+        )
+    return [resource_config.get('key')]
 
 
 def get_current_operation():
@@ -374,15 +391,21 @@ def set_external_resource(ctx_node, resource, target_operations):
     # 3. cloudify.interfaces.operations.update_project
     if is_external_resource(ctx_node):
         operation_name = get_current_operation()
-        remote_resource_response = resource.get(
-            get_key_from_resource_config(ctx_node)
+        remote_resource_responses = map(
+            lambda x: resource.get(x),
+            get_keys_from_resource_config(ctx_node)
         )
-        # remote_resource_response is a tuple of (value, KVMetadata)
+        # remote_resource_response are tuples of (value, KVMetadata)
         # with byte strings so conversion is needed
-        remote_resource = str(remote_resource_response[0])
+        remote_resources = list(
+            map(
+                lambda x: str(x[0]),
+                remote_resource_responses
+            )
+        )
         if operation_name in target_operations:
             ctx_node.instance.runtime_properties[ETCD_EXTERNAL_RESOURCE] \
-                = remote_resource
+                = remote_resources
 
 
 # Decorators
@@ -397,7 +420,7 @@ def with_etcd_resource(class_decl,
     custom operation need to be done in case "use_external_resource" is set
     to true
     :param existing_resource_kwargs: This is an extra param that we may need
-    to pass to the external resource  handler
+    to pass to the external resource handler
     :return: a wrapper object encapsulating the invoked function
     """
 

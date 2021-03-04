@@ -103,6 +103,19 @@ node_types:
         create: etcd.etcd_plugin.keyvaluepair.create
         delete: etcd.etcd_plugin.keyvaluepair.delete
 
+  cloudify.nodes.etcd.KeyValuePairs:
+    derived_from: cloudify.nodes.etcd.Base
+    properties:
+      <<: *external_resource
+      <<: *create_if_missing
+      resource_config:
+        type: list
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: etcd.etcd_plugin.keyvaluepairs.create
+        delete: etcd.etcd_plugin.keyvaluepairs.delete
+
   cloudify.nodes.etcd.WatchKey:
     derived_from: cloudify.nodes.etcd.Base
     properties:

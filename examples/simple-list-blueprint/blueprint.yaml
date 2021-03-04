@@ -1,0 +1,27 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - https://cloudify.co/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-etcd-plugin
+
+dsl_definitions:
+  client_config: &client_config
+    host: { get_secret: etcd_host }
+    port: { get_secret: etcd_port }
+
+node_templates:
+
+  example-key-value-pairs:
+    type: cloudify.nodes.etcd.KeyValuePairs
+    properties:
+      client_config: *client_config
+      use_external_resource: true
+      resource_config:
+        - kvpair: {
+            'key': 'test_key1',
+            'value': 'test_value1'
+          }
+        - kvpair: {
+            'key': 'test_key2',
+            'value': 'test_value2'
+          }
