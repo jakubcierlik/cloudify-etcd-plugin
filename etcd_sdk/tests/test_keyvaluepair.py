@@ -5,6 +5,7 @@ import mock
 # Local imports
 from etcd_sdk.tests import base
 from etcd_sdk.resources import EtcdKeyValuePair, WatchKey
+from cloudify.exceptions import TimeoutException
 
 
 class KeyValuePairTestCase(base.EtcdSDKTestBase):
@@ -200,20 +201,81 @@ class WatchKeyTestCase(base.EtcdSDKTestBase):
             'condition': b'test_value',
         }
 
+        Metadata = namedtuple('Metadata', 'version')
+        metadata = Metadata(1L)
+        value = b'foo'
+
         Event = namedtuple('Event', 'value')
         events_iterator = [
-                Event('bar1'),
-                Event('bar2'),
-                Event('test_value'),
+            Event('bar1'),
+            Event('bar2'),
+            Event('test_value'),
         ].__iter__()
         cancel_func = mock.MagicMock()
 
         self.watchkey_instance.config = config
+
+        self.fake_client.get = mock.MagicMock(return_value=(value, metadata))
         self.fake_client.watch = mock.MagicMock(
-                return_value=(events_iterator, cancel_func)
+            return_value=(events_iterator, cancel_func)
         )
 
         returned = self.watchkey_instance.watch()
 
         self.assertTrue(returned)
         cancel_func.assert_called_once()
+
+    def test_watch_already_expected_value(self):
+        config = {
+            'key': b'test_key',
+            'condition': b'test_value',
+        }
+
+        Metadata = namedtuple('Metadata', 'version')
+        metadata = Metadata(1L)
+        value = b'test_value'
+
+        Event = namedtuple('Event', 'value')
+        events_iterator = [
+            Event('bar1'),
+            Event('bar2'),
+            Event('test_value'),
+        ].__iter__()
+        cancel_func = None  # expected not to be called
+
+        self.watchkey_instance.config = config
+
+        self.fake_client.get = mock.MagicMock(return_value=(value, metadata))
+        self.fake_client.watch = mock.MagicMock(
+            return_value=(events_iterator, cancel_func)
+        )
+
+        returned = self.watchkey_instance.watch()
+
+        self.assertTrue(returned)
+
+    def test_watch_timeout(self):
+        config = {
+            'key': b'test_key',
+            'condition': b'test_value',
+            'timeout': 1  # second
+        }
+
+        Metadata = namedtuple('Metadata', 'version')
+        metadata = Metadata(1L)
+        value = b'foo'
+
+        events_num = 999999  # repeats that loop processing exceeds 1 sec
+        Event = namedtuple('Event', 'value')
+        events_iterator = ([Event('bar')] * events_num).__iter__()
+        cancel_func = mock.MagicMock()
+
+        self.watchkey_instance.config = config
+
+        self.fake_client.get = mock.MagicMock(return_value=(value, metadata))
+        self.fake_client.watch = mock.MagicMock(
+            return_value=(events_iterator, cancel_func)
+        )
+
+        with self.assertRaises(TimeoutException):
+            self.watchkey_instance.watch()

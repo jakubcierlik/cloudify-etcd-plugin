@@ -81,6 +81,11 @@ data_types:
           A string that stops watching the key once it is encountered.
         type: string
         required: true
+      timeout:
+        description: >
+          Maximum waiting time until condition (default is 10 minutes)
+        type: integer
+        required: false
 
 
 node_types:

@@ -1,5 +1,9 @@
+# Standard imports
+import signal
+
 # Local imports
 from etcd_sdk.common import EtcdResource
+from cloudify.exceptions import TimeoutException
 
 
 # TODO: add support for lock, maybe members and alarms?
@@ -137,22 +141,41 @@ class EtcdKeyValuePair(EtcdResource):
 
 class WatchKey(EtcdResource):
     resource_type = 'watchkey'
+    default_timeout = 600  # seconds
+
+    @staticmethod
+    def handler(signum, frame):
+        raise TimeoutException
 
     def watch(self):
         key = self.config.get('key')
         condition = self.config.get('condition')
+        timeout = self.config.get('timeout', None) or self.default_timeout
         self.logger.debug(
             'Started watching key: {}. Expected value: {}'
             .format(key, condition)
         )
         events_iterator, cancel = self.connection.watch(key)
-        for event in events_iterator:
+        if self.connection.get(key)[0] == condition:
             self.logger.debug(
-                'Event value: {}'.format(event.value.decode('utf-8'))
+                'Key: {0} already meets condition: {1}'.format(key, condition)
             )
-            if event.value.decode('utf-8') == condition:
-                cancel()
-        self.logger.debug(
-            'Stopped watching key: {}'.format(key)
-        )
+        else:
+            signal.signal(signal.SIGALRM, self.handler)
+            signal.alarm(timeout)
+            try:
+                for event in events_iterator:
+                    self.logger.debug(
+                        'Event value: {}'.format(event.value.decode('utf-8'))
+                    )
+                    if event.value.decode('utf-8') == condition:
+                        cancel()
+            except TimeoutException:
+                raise TimeoutException(
+                    'Key: {0} - timeout {1} secs exceeded on condition: {2}'
+                    .format(key, timeout, condition)
+                )
+            self.logger.debug(
+                'Stopped watching key: {}'.format(key)
+            )
         return True
