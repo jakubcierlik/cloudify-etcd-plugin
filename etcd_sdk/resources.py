@@ -17,6 +17,8 @@ class EtcdKeyValuePair(EtcdResource):
         )
         key = self.config.get('key')
         value = self.config.get('value')
+        # TODO: add support for fail_on_overwrite flag
+        fail_on_overwrite = self.config.get('fail_on_overwrite')
         response = self.connection.put(
             key=key,
             value=value,
