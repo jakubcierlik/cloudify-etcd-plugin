@@ -2,6 +2,7 @@
 from cloudify import ctx
 
 # Local imports
+from . import get_desired_value
 from etcd_plugin.utils import with_etcd_resource
 from etcd_sdk.resources import EtcdKeyValuePair
 from cloudify.exceptions import NonRecoverableError
@@ -22,11 +23,21 @@ def handle_external_keyvaluepairs(etcd_resource):
 @with_etcd_resource(EtcdKeyValuePair,
                     existing_resource_handler=handle_external_keyvaluepairs
                     )
-def create(etcd_resource):
+def create(etcd_resource, **kwargs):
     """
     Create key-value pairs and put it in etcd store
     :param etcd_resource: Instance of etcd key-value pairs resource
     """
+    ctx.instance.runtime_properties['all_keys'] = \
+        ctx.instance.runtime_properties.get('all_keys') or []
+    etcd_resource.config = \
+        get_desired_value(
+            'all_keys',
+            kwargs,
+            ctx.instance.runtime_properties,
+            {
+                'all_keys': ctx.node.properties.get('resource_config')
+            })
     for kvpair in etcd_resource.config:
         ctx.logger.info(
             'Loading kvpair: {0}'.format(kvpair)
@@ -42,7 +53,8 @@ def create(etcd_resource):
             logger=etcd_resource.logger
         )
         key, value = etcd_key_value_pair.create()
-        ctx.instance.runtime_properties[key] = value
+        ctx.instance.runtime_properties['all_keys'].append(
+            kvpair.get('kvpair'))
 
 
 @with_etcd_resource(EtcdKeyValuePair)

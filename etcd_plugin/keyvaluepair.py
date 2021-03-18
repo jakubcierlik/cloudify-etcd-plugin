@@ -2,6 +2,7 @@
 from cloudify import ctx
 
 # Local imports
+from . import get_desired_value
 from etcd_plugin.utils import with_etcd_resource
 from etcd_sdk.resources import EtcdKeyValuePair
 
@@ -19,13 +20,28 @@ def handle_external_keyvaluepair(etcd_resource):
 
 @with_etcd_resource(EtcdKeyValuePair,
                     existing_resource_handler=handle_external_keyvaluepair)
-def create(etcd_resource):
+def create(etcd_resource, **kwargs):
     """
     Create a key-value pair and put it in etcd store
     :param etcd_resource: Instance of etcd key-value pair resource
     """
+    etcd_resource.config['key'] = \
+        get_desired_value(
+            'key',
+            kwargs,
+            ctx.instance.runtime_properties,
+            ctx.node.properties.get('resource_config'))
+
+    etcd_resource.config['value'] = \
+        get_desired_value(
+            'value',
+            kwargs,
+            ctx.instance.runtime_properties,
+            ctx.node.properties.get('resource_config'))
+
     key, value = etcd_resource.create()
-    ctx.instance.runtime_properties[key] = value
+    ctx.instance.runtime_properties['key'] = key
+    ctx.instance.runtime_properties['value'] = value
 
 
 @with_etcd_resource(EtcdKeyValuePair)

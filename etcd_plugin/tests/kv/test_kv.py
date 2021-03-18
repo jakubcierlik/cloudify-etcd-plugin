@@ -32,7 +32,10 @@ class KeyValuePairTestCase(EtcdTestBase):
         keyvaluepair.create(etcd_resource=None)
 
         # assert
-        self.assertEqual(self._ctx.instance.runtime_properties['test_key'],
+        self.assertEqual(self._ctx.instance.runtime_properties['key'],
+                         'test_key')
+
+        self.assertEqual(self._ctx.instance.runtime_properties['value'],
                          'test_value')
 
     def test_create_external_resource(self, mock_connection):
@@ -57,7 +60,8 @@ class KeyValuePairTestCase(EtcdTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.create',
             test_properties=properties,
             test_runtime_properties={
-                b'test_ext_key': b'test_ext_value',
+                'key': b'test_ext_key',
+                'value': b'test_ext_value',
             })
         Metadata = namedtuple('Metadata', 'version')
         metadata = Metadata(1L)
@@ -68,8 +72,30 @@ class KeyValuePairTestCase(EtcdTestBase):
         keyvaluepair.create(etcd_resource=None)
 
         # assert
-        self.assertEqual(self._ctx.instance.runtime_properties['test_ext_key'],
+        self.assertEqual(self._ctx.instance.runtime_properties['key'],
+                         'test_ext_key')
+
+        self.assertEqual(self._ctx.instance.runtime_properties['value'],
                          'test_ext_value')
+
+    def test_create_from_args(self, mock_connection):
+        # arrange
+        self._prepare_context_for_operation(
+            test_name='KeyValuePairTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.create')
+        mock_connection().put = mock.MagicMock()
+
+        # act
+        keyvaluepair.create(etcd_resource=None,
+                            key=b'test_arg_key',
+                            value=b'test_arg_value')
+
+        # assert
+        self.assertEqual(self._ctx.instance.runtime_properties['key'],
+                         'test_arg_key')
+
+        self.assertEqual(self._ctx.instance.runtime_properties['value'],
+                         'test_arg_value')
 
     def test_delete(self, mock_connection):
         # arrange
