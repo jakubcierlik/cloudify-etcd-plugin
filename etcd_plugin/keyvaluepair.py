@@ -39,6 +39,13 @@ def create(etcd_resource, **kwargs):
             ctx.instance.runtime_properties,
             ctx.node.properties.get('resource_config'))
 
+    etcd_resource.config['fail_on_overwrite'] = \
+        get_desired_value(
+            'fail_on_overwrite',
+            kwargs,
+            ctx.instance.runtime_properties,
+            ctx.node.properties.get('resource_config'))
+
     key, value = etcd_resource.create()
     ctx.instance.runtime_properties['key'] = key
     ctx.instance.runtime_properties['value'] = value

@@ -69,6 +69,10 @@ data_types:
           All keys attached to this lease will be expired and deleted if
           the lease expires.
         required: false
+      fail_on_overwrite:
+        description: Fail and prevent from overwriting existing value.
+        type: boolean
+        required: false
 
   cloudify.datatypes.etcd.resourceconfig.WatchKey:
     properties:

@@ -47,9 +47,13 @@ def create(etcd_resource, **kwargs):
                 "Key and value should be stored "
                 "in an object under the key 'kvpair'!"
             )
+        resource_config = kvpair.get('kvpair')
+        fail_on_overwrite = kwargs.get('fail_on_overwrite')
+        if fail_on_overwrite:
+            resource_config['fail_on_overwrite'] = fail_on_overwrite
         etcd_key_value_pair = EtcdKeyValuePair(
             client_config=etcd_resource.client_config,
-            resource_config=kvpair.get('kvpair'),
+            resource_config=resource_config,
             logger=etcd_resource.logger
         )
         key, value = etcd_key_value_pair.create()

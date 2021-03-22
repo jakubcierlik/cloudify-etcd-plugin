@@ -5,7 +5,7 @@ import mock
 # Local imports
 from etcd_sdk.tests import base
 from etcd_sdk.resources import EtcdKeyValuePair, WatchKey
-from cloudify.exceptions import TimeoutException
+from cloudify.exceptions import TimeoutException, RecoverableError
 
 
 class KeyValuePairTestCase(base.EtcdSDKTestBase):
@@ -41,6 +41,27 @@ class KeyValuePairTestCase(base.EtcdSDKTestBase):
         )
         self.assertEqual(returned_key, 'test_key')
         self.assertEqual(returned_value, 'test_value')
+
+    def test_protect_overwrite_keyvaluepair(self):
+        config = {
+            'key': b'test_key',
+            'value': b'test_value',
+            'fail_on_overwrite': True,
+        }
+
+        Lease = namedtuple('Lease', 'id ttl')
+        lease = Lease(1234L, 10L)
+        Metadata = namedtuple('Metadata', 'version')
+        metadata = Metadata(1L)
+        value = b'previous_value'
+
+        self.keyvaluepair_instance.config = config
+
+        self.fake_client.get = mock.MagicMock(return_value=(value, metadata))
+        self.fake_client.put = mock.MagicMock()
+
+        with self.assertRaises(RecoverableError):
+            self.keyvaluepair_instance.create(lease=lease, prev_kv=True)
 
     def test_get_keyvaluepair(self):
         Metadata = namedtuple('Metadata', 'version')

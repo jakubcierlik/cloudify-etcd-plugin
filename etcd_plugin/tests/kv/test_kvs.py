@@ -5,6 +5,7 @@ import mock
 # Local imports
 from etcd_plugin.tests.base import EtcdTestBase
 from etcd_plugin import keyvaluepairs
+from cloudify.exceptions import RecoverableError
 
 
 @mock.patch('etcd3.client')
@@ -46,6 +47,24 @@ class KeyValuePairTestCase(EtcdTestBase):
         # assert
         self.assertEqual(self._ctx.instance.runtime_properties['all_keys'],
                          all_expected_keys)
+
+    def test_create_protect_overwrite(self, mock_connection):
+        # arrange
+        self._prepare_context_for_operation(
+            test_name='KeyValuePairsTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.create')
+
+        Metadata = namedtuple('Metadata', 'version')
+        metadata = Metadata(1L)
+        value = b'previous_value'
+
+        mock_connection().get = mock.MagicMock(return_value=(value, metadata))
+        mock_connection().put = mock.MagicMock()
+
+        # act
+        with self.assertRaises(RecoverableError):
+            keyvaluepairs.create(etcd_resource=None,
+                                 fail_on_overwrite=True)
 
     def test_create_external_resource(self, mock_connection):
         # arrange

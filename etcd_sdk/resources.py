@@ -3,7 +3,11 @@ import signal
 
 # Local imports
 from etcd_sdk.common import EtcdResource
-from cloudify.exceptions import TimeoutException
+from cloudify.exceptions import (
+        TimeoutException,
+        RecoverableError,
+        CommandExecutionError
+    )
 
 
 # TODO: add support for lock, maybe members and alarms?
@@ -17,8 +21,14 @@ class EtcdKeyValuePair(EtcdResource):
         )
         key = self.config.get('key')
         value = self.config.get('value')
-        # TODO: add support for fail_on_overwrite flag
         fail_on_overwrite = self.config.get('fail_on_overwrite')
+        if fail_on_overwrite:
+            existing_value, existing_kvmetadata = self.connection.get(key)
+            if existing_kvmetadata:
+                raise RecoverableError(
+                    "fail_on_overwrite in config is enabled and value '{0}'"
+                    " is already stored".format(str(existing_value))
+                )
         response = self.connection.put(
             key=key,
             value=value,
@@ -118,9 +128,28 @@ class EtcdKeyValuePair(EtcdResource):
         self.logger.debug(
             'Attempting to delete the key: {}'.format(key)
         )
-        response = self.connection.delete(
-            key, prev_kv=prev_kv, return_response=return_response
-        )
+        fail_on_overwrite = self.config.get('fail_on_overwrite')
+        if fail_on_overwrite:
+            predelete_value, existing_kvmetadata = self.connection.get(key)
+            if self.config.get('value') != str(predelete_value):
+                return
+            response = self.connection.delete(
+                key, prev_kv=True, return_response=True
+            )
+            if not response.deleted:
+                raise RecoverableError(
+                    'Key: {0} delete unsuccessful'.format(key))
+            deleted_value = response.prev_kvs[-1].value
+            if deleted_value != str(predelete_value):
+                raise CommandExecutionError(
+                    'etcd3 delete key',
+                    'Deleted another value ({0}) than expected ({1}) for'
+                    ' key: {2}'.format(deleted_value, predelete_value, key)
+                )
+        else:
+            response = self.connection.delete(
+                key, prev_kv=prev_kv, return_response=return_response
+            )
         # TODO: add some check if the deletion was successful
         self.logger.debug(
             'Deleted key-value pair "{}" with result: {}'.format(key, response)
