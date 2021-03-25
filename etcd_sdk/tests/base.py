@@ -19,6 +19,7 @@ class EtcdSDKTestBase(unittest.TestCase):
         return {
             'keyvaluepair': self._fake_keyvaluepair,
             'watchkey': self._fake_watchkey,
+            'lock': self._fake_lock
         }
 
     @property
@@ -46,4 +47,8 @@ class EtcdSDKTestBase(unittest.TestCase):
 
     def _fake_watchkey(self):
         self.connection.watch = self._gen_etcd_sdk_error()
+        return self.connection
+
+    def _fake_lock(self):
+        self.connection.lock = self._gen_etcd_sdk_error()
         return self.connection

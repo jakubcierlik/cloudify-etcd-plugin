@@ -4,10 +4,11 @@ import signal
 # Local imports
 from etcd_sdk.common import EtcdResource
 from cloudify.exceptions import (
-        TimeoutException,
-        RecoverableError,
-        CommandExecutionError
-    )
+    TimeoutException,
+    RecoverableError,
+    NonRecoverableError,
+    CommandExecutionError,
+)
 
 
 # TODO: add support for lock, maybe members and alarms?
@@ -74,7 +75,7 @@ class EtcdKeyValuePair(EtcdResource):
         return response
 
     def get_range(
-        self, range_start, range_end, sort_order=None, sort_target='key'
+            self, range_start, range_end, sort_order=None, sort_target='key'
     ):
         self.logger.debug(
             'Attempting to get values of all keys in range: {}-{}'
@@ -210,3 +211,62 @@ class WatchKey(EtcdResource):
                 'Stopped watching key: {}'.format(key)
             )
         return True
+
+
+class EtcdLock(EtcdResource):
+    resource_type = 'lock'
+    default_ttl = 60  # seconds
+    default_acquire_timeout = 10  # seconds
+
+    def create(self):
+        lock_name = self.config.get('lock_name') or self.config.get('name')
+        ttl = self.config.get('ttl', None) or self.default_ttl
+        acquire_timeout = self.config.get('acquire_timeout', None) \
+            or self.default_acquire_timeout
+        lock_obj = self.connection.lock(lock_name, ttl=ttl)
+        self.logger.debug(
+            'Acquiring lock "{}" with time-to-live: {} s'
+            .format(lock_name, ttl)
+        )
+        if lock_obj.acquire(timeout=acquire_timeout):
+            self.logger.debug(
+                'Acquired lock "{}" with time-to-live: {} s'
+                .format(lock_obj.name, lock_obj.ttl)
+            )
+            return lock_obj
+        else:
+            raise RecoverableError(
+                'Failed to acquire lock: {}'
+                .format(lock_obj.name))
+
+    def validate_lock_acquired(self, key, lock_bytes_uuid):
+        lock_name = self.config.get('lock_name') or self.config.get('name')
+        value, _ = self.connection.get(key)
+        if value != lock_bytes_uuid \
+                or value is None:
+            raise NonRecoverableError(
+                'Lock "{}" not acquired.'.format(lock_name)
+            )
+
+    def delete(self, key, lock_bytes_uuid):
+        lock_name = self.config.get('lock_name') or self.config.get('name')
+        value, _ = self.connection.get(key)
+        if value == lock_bytes_uuid:
+            self.logger.debug(
+                'Releasing lock: {}'.format(lock_name)
+            )
+            response = self.connection.delete(key)
+            self.logger.debug(
+                'Deleted lock "{}" with result: {}'.format(lock_name, response)
+            )
+            return response
+        if value:
+            self.logger.info(
+                'Lock "{}" is not acquired, maybe another one is already'
+                ' acquired. Release skipped.'.format(lock_name)
+            )
+            return False
+        self.logger.info(
+            'Lock "{}" not acquired. Release skipped.'.format(lock_name)
+        )
+        return False

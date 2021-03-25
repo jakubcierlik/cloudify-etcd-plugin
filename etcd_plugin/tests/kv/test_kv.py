@@ -5,7 +5,7 @@ import mock
 # Local imports
 from etcd_plugin.tests.base import EtcdTestBase
 from etcd_plugin import keyvaluepair
-from cloudify.exceptions import RecoverableError, CommandExecutionError
+from cloudify.exceptions import RecoverableError, NonRecoverableError
 
 
 @mock.patch('etcd3.client')
@@ -186,7 +186,7 @@ class KeyValuePairTestCase(EtcdTestBase):
             = True
 
         # act
-        with self.assertRaises(CommandExecutionError):
+        with self.assertRaises(NonRecoverableError):
             keyvaluepair.delete(etcd_resource=None)
 
         # assert

@@ -87,7 +87,27 @@ data_types:
         required: true
       timeout:
         description: >
-          Maximum waiting time until condition (default is 10 minutes)
+          Maximum waiting time in seconds until condition (default is 10 minutes).
+        type: integer
+        required: false
+
+  cloudify.datatypes.etcd.resourceconfig.Lock:
+    properties:
+      lock_name:
+        description: >
+          The identifier for the distributed shared lock to be acquired.
+        type: string
+        required: true
+      ttl:
+        description: >
+          The length of time for the lock to live for in seconds (default
+          is 60 seconds). The lock will be released after this time elapses,
+          unless refreshed.
+        type: integer
+        required: false
+      acquire_timeout:
+        description: >
+          The timeout in seconds on acquiring lock (default is 10 seconds).
         type: integer
         required: false
 
@@ -135,3 +155,16 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: etcd.etcd_plugin.watchkey.watch
         delete: etcd.etcd_plugin.watchkey.delete
+
+  cloudify.nodes.etcd.Lock:
+    derived_from: cloudify.nodes.etcd.Base
+    properties:
+      resource_config:
+        type: cloudify.datatypes.etcd.resourceconfig.Lock
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: etcd.etcd_plugin.lock.create
+        delete: etcd.etcd_plugin.lock.delete
+      cloudify.interfaces.validation:
+        acquirement: etcd.etcd_plugin.lock.acquirement_validation

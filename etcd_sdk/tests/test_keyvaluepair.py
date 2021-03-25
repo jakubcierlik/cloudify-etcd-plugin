@@ -4,8 +4,12 @@ import mock
 
 # Local imports
 from etcd_sdk.tests import base
-from etcd_sdk.resources import EtcdKeyValuePair, WatchKey
-from cloudify.exceptions import TimeoutException, RecoverableError
+from etcd_sdk.resources import EtcdKeyValuePair, WatchKey, EtcdLock
+from cloudify.exceptions import (
+    TimeoutException,
+    RecoverableError,
+    NonRecoverableError,
+)
 
 
 class KeyValuePairTestCase(base.EtcdSDKTestBase):
@@ -300,3 +304,153 @@ class WatchKeyTestCase(base.EtcdSDKTestBase):
 
         with self.assertRaises(TimeoutException):
             self.watchkey_instance.watch()
+
+
+class LockTestCase(base.EtcdSDKTestBase):
+    def setUp(self):
+        super(LockTestCase, self).setUp()
+        self.fake_client = self.generate_fake_etcd_connection('lock')
+        self.lock_instance = EtcdLock(
+            client_config=self.client_config,
+            logger=mock.MagicMock()
+        )
+        self.lock_instance.connection = self.connection
+
+    def test_create_lock(self):
+        config = {
+            'lock_name': b'test_lock',
+            'ttl': 600,
+        }
+
+        self.lock_instance.config = config
+
+        Lock = namedtuple('Lock', 'name ttl acquire')
+        acquire_method = mock.MagicMock(return_value=True)
+        lock = Lock(name='test_lock',
+                    ttl=600,
+                    acquire=acquire_method)
+        self.fake_client.lock = mock.MagicMock(return_value=lock)
+
+        lock_obj = self.lock_instance.create()
+
+        self.assertIsNotNone(lock_obj)
+        acquire_method.assert_called()
+
+    def test_create_cannot_acquire(self):
+        config = {
+            'lock_name': b'test_lock',
+            'ttl': 600,
+        }
+
+        self.lock_instance.config = config
+
+        Lock = namedtuple('Lock', 'name ttl acquire')
+        acquire_method = mock.MagicMock(return_value=False)
+        lock = Lock(name='test_lock',
+                    ttl=600,
+                    acquire=acquire_method)
+        self.fake_client.lock = mock.MagicMock(return_value=lock)
+
+        with self.assertRaises(RecoverableError):
+            self.lock_instance.create()
+        acquire_method.assert_called()
+
+    def test_validate_acquired(self):
+        config = {
+            'lock_name': b'test_lock',
+            'ttl': 600,
+        }
+
+        self.lock_instance.config = config
+
+        key = '/locks/test_lock'
+        uuid_bytes = '%C\xdc\x18\x8dF\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
+        self.fake_client.get = mock.MagicMock(return_value=(uuid_bytes, None))
+
+        self.lock_instance.validate_lock_acquired(key, uuid_bytes)
+
+    def test_validate_not_acquired(self):
+        config = {
+            'lock_name': b'test_lock',
+            'ttl': 600,
+        }
+
+        self.lock_instance.config = config
+
+        key = '/locks/test_lock'
+        uuid_bytes = '%C\xdc\x18\x8dF\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
+        self.fake_client.get = mock.MagicMock(return_value=(None, None))
+
+        with self.assertRaises(NonRecoverableError):
+            self.lock_instance.validate_lock_acquired(key, uuid_bytes)
+
+    def test_validate_another_acquired(self):
+        config = {
+            'lock_name': b'test_lock',
+            'ttl': 600,
+        }
+
+        self.lock_instance.config = config
+
+        key = '/locks/test_lock'
+        uuid_bytes1 = '%C\xdc\x18\x8dF\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
+        uuid_bytes2 = 'Q\xae\x91Z\x8dN\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
+        self.fake_client.get = mock.MagicMock(return_value=(uuid_bytes2, None))
+
+        with self.assertRaises(NonRecoverableError):
+            self.lock_instance.validate_lock_acquired(key, uuid_bytes1)
+
+    def test_delete(self):
+        config = {
+            'lock_name': b'test_lock',
+            'ttl': 600,
+        }
+
+        self.lock_instance.config = config
+
+        key = '/locks/test_lock'
+        uuid_bytes = '%C\xdc\x18\x8dF\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
+        self.fake_client.get = mock.MagicMock(return_value=(uuid_bytes, None))
+        self.fake_client.delete = mock.MagicMock(return_value=True)
+
+        response = self.lock_instance.delete(key, uuid_bytes)
+
+        self.assertTrue(response)
+        self.fake_client.delete.assert_called_with('/locks/test_lock')
+
+    def test_delete_not_acquired(self):
+        config = {
+            'lock_name': b'test_lock',
+            'ttl': 600,
+        }
+
+        self.lock_instance.config = config
+
+        key = '/locks/test_lock'
+        uuid_bytes = '%C\xdc\x18\x8dF\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
+        self.fake_client.get = mock.MagicMock(return_value=(None, None))
+        self.fake_client.delete = mock.MagicMock(return_value=True)
+
+        response = self.lock_instance.delete(key, uuid_bytes)
+
+        self.assertFalse(response)
+
+    def test_delete_another_acquirement(self):
+        config = {
+            'lock_name': b'test_lock',
+            'ttl': 600,
+        }
+
+        self.lock_instance.config = config
+
+        key = '/locks/test_lock'
+        uuid_bytes1 = '%C\xdc\x18\x8dF\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
+        uuid_bytes2 = 'Q\xae\x91Z\x8dN\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
+        self.fake_client.get = mock.MagicMock(return_value=(uuid_bytes2, None))
+        self.fake_client.delete = mock.MagicMock(return_value=True)
+
+        response = self.lock_instance.delete(key, uuid_bytes1)
+
+        self.assertFalse(response)
+        # any modification may exhibit undefined behavior
+        self.fake_client.delete.assert_not_called()

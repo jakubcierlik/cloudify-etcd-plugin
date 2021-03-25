@@ -5,7 +5,7 @@ import inspect
 # Third party imports
 import etcd3.exceptions
 from cloudify import ctx as CloudifyContext
-from cloudify.exceptions import NonRecoverableError
+from cloudify.exceptions import NonRecoverableError, RecoverableError
 from cloudify.utils import exception_to_error_cause
 from cloudify.constants import NODE_INSTANCE, RELATIONSHIP_INSTANCE
 
@@ -445,10 +445,11 @@ def with_etcd_resource(class_decl,
                 # run action
                 kwargs['etcd_resource'] = resource
                 func(**kwargs)
-                # update_runtime_properties_for_operation_task(operation_name,
-                #                                              ctx_node,
-                #                                              resource)
-
+                update_runtime_properties_for_operation_task(operation_name,
+                                                             ctx_node,
+                                                             resource)
+            except RecoverableError as error:
+                raise error
             except Exception as errors:
                 _, _, tb = sys.exc_info()
                 raise NonRecoverableError(
