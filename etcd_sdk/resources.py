@@ -248,6 +248,11 @@ class EtcdLock(EtcdResource):
                 'Lock "{}" not acquired.'.format(lock_name)
             )
 
+    def refresh(self, lease_id):
+        ttl = self.config.get('ttl', None) or self.default_ttl
+        lease_obj = self.connection.lease(ttl, lease_id=lease_id)
+        lease_obj.refresh()
+
     def delete(self, key, lock_bytes_uuid):
         lock_name = self.config.get('lock_name') or self.config.get('name')
         value, _ = self.connection.get(key)

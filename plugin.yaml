@@ -165,6 +165,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: etcd.etcd_plugin.lock.create
+        refresh: etcd.etcd_plugin.lock.refresh
         delete: etcd.etcd_plugin.lock.delete
       cloudify.interfaces.validation:
         acquirement: etcd.etcd_plugin.lock.acquirement_validation

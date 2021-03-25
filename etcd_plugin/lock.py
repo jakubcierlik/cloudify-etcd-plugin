@@ -16,6 +16,7 @@ def create(etcd_resource):
     """
     lock_obj = etcd_resource.create()
     ctx.instance.runtime_properties['lock_key'] = lock_obj.key
+    ctx.instance.runtime_properties['lock_lease_id'] = lock_obj.lease.id
     ctx.instance.runtime_properties['lock_hex_uuid'] = \
         UUID(bytes=lock_obj.uuid).hex
 
@@ -51,6 +52,24 @@ def acquirement_validation(etcd_resource, **kwargs):
     ctx.logger.debug(
         'OK: lock "{}" is acquired.'.format(etcd_resource.name)
     )
+
+
+@with_etcd_resource(EtcdLock)
+def refresh(etcd_resource, **kwargs):
+    """
+    Refresh the etcd lock
+    :param etcd_resource: Instance of etcd lock resource
+    :param kwargs: Configuration must be provided in kwargs or
+    runtime_properties in order to release lock and it is lock_lease_id
+    """
+    lease_id = get_desired_value(
+            'lock_lease_id',
+            kwargs,
+            ctx.instance.runtime_properties,
+            {}
+        )
+
+    etcd_resource.refresh(lease_id)
 
 
 @with_etcd_resource(EtcdLock)

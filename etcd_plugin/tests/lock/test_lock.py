@@ -26,12 +26,14 @@ class LockTestCase(EtcdTestBase):
         self._prepare_context_for_operation(
             test_name='LockTestCase',
             ctx_operation_name='cloudify.interfaces.lifecycle.create')
-        Lock = namedtuple('Lock', 'name ttl key uuid acquire')
+        Lease = namedtuple('Lease', 'id')
+        Lock = namedtuple('Lock', 'name ttl key lease uuid acquire')
         acquire_method = mock.MagicMock(return_value=True)
         lock_obj = Lock(
             name='test_lock',
             ttl=600,
             key='/locks/test_lock',
+            lease=Lease(7668636638277611120L),
             uuid='%C\xdc\x18\x8dF\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5',
             acquire=acquire_method
         )
@@ -43,6 +45,9 @@ class LockTestCase(EtcdTestBase):
         # assert
         self.assertEqual(self._ctx.instance.runtime_properties['lock_key'],
                          '/locks/test_lock')
+        self.assertEqual(
+            self._ctx.instance.runtime_properties['lock_lease_id'],
+            7668636638277611120L)
         self.assertIsInstance(
             self._ctx.instance.runtime_properties['lock_hex_uuid'], str)
         acquire_method.assert_called()
@@ -70,9 +75,20 @@ class LockTestCase(EtcdTestBase):
         self._prepare_context_for_operation(
             test_name='LockTestCase',
             ctx_operation_name='cloudify.interfaces.lifecycle.refresh')
+        Lease = namedtuple('Lease', 'refresh')
+        refresh = mock.MagicMock()
+        lease_obj = Lease(refresh)
+        self._ctx.instance.runtime_properties['lock_lease_id'] = \
+            7668636638277611120L
+        mock_connection().lease = mock.MagicMock(return_value=lease_obj)
+
+        # act
+        lock.refresh(etcd_resource=None)
 
         # assert
-        self.assertTrue(False)
+        mock_connection().lease\
+            .assert_called_with(600, lease_id=7668636638277611120L)
+        refresh.assert_called()
 
     def test_acquirement_valid(self, mock_connection):
         # arrange

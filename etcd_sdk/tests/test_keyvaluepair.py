@@ -400,6 +400,23 @@ class LockTestCase(base.EtcdSDKTestBase):
         with self.assertRaises(NonRecoverableError):
             self.lock_instance.validate_lock_acquired(key, uuid_bytes1)
 
+    def test_refresh(self):
+        config = {
+            'lock_name': b'test_lock',
+            'ttl': 600,
+        }
+
+        self.lock_instance.config = config
+        Lease = namedtuple('Lease', 'refresh')
+        refresh_method = mock.MagicMock()
+        lease_obj = Lease(refresh_method)
+        self.fake_client.lease = mock.MagicMock(return_value=lease_obj)
+        lease_id = 7668636638277611120L
+
+        self.lock_instance.refresh(lease_id)
+
+        refresh_method.assert_called()
+
     def test_delete(self):
         config = {
             'lock_name': b'test_lock',
