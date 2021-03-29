@@ -31,7 +31,7 @@ def acquirement_validation(etcd_resource, **kwargs):
     are lock_key and lock_hex_uuid
     """
 
-    key = get_desired_value(
+    etcd_resource.config['key'] = get_desired_value(
             'lock_key',
             kwargs,
             ctx.instance.runtime_properties,
@@ -45,12 +45,12 @@ def acquirement_validation(etcd_resource, **kwargs):
             {}
         )
 
-    lock_bytes_uuid = UUID(hex=lock_hex_uuid).bytes
+    etcd_resource.config['lock_bytes_uuid'] = UUID(hex=lock_hex_uuid).bytes
 
-    etcd_resource.validate_lock_acquired(key, lock_bytes_uuid)
+    etcd_resource.validate_lock_acquired()
 
-    ctx.logger.debug(
-        'OK: lock "{}" is acquired.'.format(etcd_resource.name)
+    ctx.logger.info(
+        'Lock "{}" is acquired.'.format(etcd_resource.name)
     )
 
 
@@ -62,14 +62,14 @@ def refresh(etcd_resource, **kwargs):
     :param kwargs: Configuration must be provided in kwargs or
     runtime_properties in order to release lock and it is lock_lease_id
     """
-    lease_id = get_desired_value(
+    etcd_resource.config['lock_lease_id'] = get_desired_value(
             'lock_lease_id',
             kwargs,
             ctx.instance.runtime_properties,
             {}
         )
 
-    etcd_resource.refresh(lease_id)
+    etcd_resource.refresh()
 
 
 @with_etcd_resource(EtcdLock)
@@ -82,7 +82,7 @@ def delete(etcd_resource, **kwargs):
     are lock_key and lock_hex_uuid
     """
 
-    key = get_desired_value(
+    etcd_resource.config['key'] = get_desired_value(
             'lock_key',
             kwargs,
             ctx.instance.runtime_properties,
@@ -96,6 +96,6 @@ def delete(etcd_resource, **kwargs):
             {}
         )
 
-    lock_bytes_uuid = UUID(hex=lock_hex_uuid).bytes
+    etcd_resource.config['lock_bytes_uuid'] = UUID(hex=lock_hex_uuid).bytes
 
-    etcd_resource.delete(key, lock_bytes_uuid)
+    etcd_resource.delete()

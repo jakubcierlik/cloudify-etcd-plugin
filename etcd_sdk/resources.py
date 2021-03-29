@@ -239,8 +239,10 @@ class EtcdLock(EtcdResource):
                 'Failed to acquire lock: {}'
                 .format(lock_obj.name))
 
-    def validate_lock_acquired(self, key, lock_bytes_uuid):
+    def validate_lock_acquired(self):
         lock_name = self.config.get('lock_name') or self.config.get('name')
+        key = self.config.get('key')
+        lock_bytes_uuid = self.config.get('lock_bytes_uuid')
         value, _ = self.connection.get(key)
         if value != lock_bytes_uuid \
                 or value is None:
@@ -248,13 +250,16 @@ class EtcdLock(EtcdResource):
                 'Lock "{}" not acquired.'.format(lock_name)
             )
 
-    def refresh(self, lease_id):
+    def refresh(self):
         ttl = self.config.get('ttl', None) or self.default_ttl
+        lease_id = self.config.get('lock_lease_id')
         lease_obj = self.connection.lease(ttl, lease_id=lease_id)
         lease_obj.refresh()
 
-    def delete(self, key, lock_bytes_uuid):
+    def delete(self):
         lock_name = self.config.get('lock_name') or self.config.get('name')
+        key = self.config.get('key')
+        lock_bytes_uuid = self.config.get('lock_bytes_uuid')
         value, _ = self.connection.get(key)
         if value == lock_bytes_uuid:
             self.logger.debug(
@@ -275,3 +280,43 @@ class EtcdLock(EtcdResource):
             'Lock "{}" not acquired. Release skipped.'.format(lock_name)
         )
         return False
+
+
+class EtcdMember(EtcdResource):
+    resource_type = 'member'
+
+    def create(self):
+        peer_urls = self.config.get('peer_urls')
+        self.logger.debug(
+            'Adding new member with peer URLs: {}'
+            .format(peer_urls)
+        )
+        new_member = self.connection.add_member(peer_urls)
+        self.logger.debug(
+            'Added new member with peer URLs: {} and ID: {}'
+            .format(new_member.peer_urls, new_member.id)
+        )
+        return new_member
+
+    def list(self):
+        members = self.connection.members
+        self.logger.debug(
+            'Listing all defined key-value pairs: {}'.format(members)
+        )
+        return members
+
+    def update(self):
+        member_id = self.config.get('member_id')
+        peer_urls = self.config.get('peer_urls')
+        self.logger.debug(
+            'Updating member peer URLs: {} and ID: {}'
+            .format(peer_urls, member_id)
+        )
+        self.connection.update_member(member_id, peer_urls)
+
+    def delete(self):
+        member_id = self.config.get('member_id')
+        self.logger.debug(
+            'Removing member ID: {}'.format(member_id)
+        )
+        self.connection.remove_member(member_id)
