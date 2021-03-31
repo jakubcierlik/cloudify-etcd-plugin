@@ -5,12 +5,9 @@ imports:
   - plugin:cloudify-etcd-plugin
 
 inputs:
-  lock_name:
-    type: string
-  ttl:
-    type: integer
-  acquire_timeout:
-    type: integer
+  peer_urls:
+    type: list
+
 
 dsl_definitions:
   client_config: &client_config
@@ -20,10 +17,8 @@ dsl_definitions:
 node_templates:
 
   example-lock:
-    type: cloudify.nodes.etcd.Lock
+    type: cloudify.nodes.etcd.Member
     properties:
       client_config: *client_config
       resource_config:
-        lock_name: { get_input: lock_name }
-        ttl: { get_input: ttl }
-        acquire_timeout: { get_input: acquire_timeout }
+        peer_urls: { get_input: peer_urls }

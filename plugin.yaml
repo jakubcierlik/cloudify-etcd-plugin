@@ -111,6 +111,14 @@ data_types:
         type: integer
         required: false
 
+  cloudify.datatypes.etcd.resourceconfig.Member:
+    properties:
+      peer_urls:
+        description: >
+          The list of one or more peer URLs, eg. http://127.0.0.1:2380.
+        type: list
+        required: true
+
 
 node_types:
 
@@ -169,3 +177,17 @@ node_types:
         delete: etcd.etcd_plugin.lock.delete
       cloudify.interfaces.validation:
         acquirement: etcd.etcd_plugin.lock.acquirement_validation
+
+  cloudify.nodes.etcd.Member:
+    derived_from: cloudify.nodes.etcd.Base
+    properties:
+      resource_config:
+        type: cloudify.datatypes.etcd.resourceconfig.Member
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: etcd.etcd_plugin.member.create
+        delete: etcd.etcd_plugin.member.delete
+      cloudify.interfaces.operations:
+        update: etcd.etcd_plugin.member.update
+        disarm: etcd.etcd_plugin.member.disarm

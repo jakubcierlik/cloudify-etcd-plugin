@@ -71,3 +71,37 @@ class MemberTestCase(EtcdTestBase):
             18129864113152051069,
             ['http://127.0.0.1:2380']
         )
+
+    def test_disarm_member(self, mock_connection):
+        # arrange
+        self._prepare_context_for_operation(
+            test_name='MemberTestCase',
+            ctx_operation_name='cloudify.interfaces.operations.disarm')
+        self._ctx.instance.runtime_properties['member_id'] = \
+            18129864113152051069
+        Alarm = namedtuple('Alarm', 'alarm_type member_id')
+        alarms = [Alarm(1, 18129864113152051070L)]
+        mock_connection().disarm_alarm = mock.MagicMock(return_value=alarms)
+
+        # act
+        member.disarm(etcd_resource=None)
+
+        # assert
+        mock_connection().disarm_alarm\
+            .assert_called_with(18129864113152051069)
+
+    def test_disarm_all(self, mock_connection):
+        # arrange
+        self._prepare_context_for_operation(
+            test_name='MemberTestCase',
+            ctx_operation_name='cloudify.interfaces.operations.disarm')
+        self._ctx.instance.runtime_properties['member_id'] = \
+            18129864113152051069
+        alarms = []
+        mock_connection().disarm_alarm = mock.MagicMock(return_value=alarms)
+
+        # act
+        member.disarm(etcd_resource=None, member_id='all')
+
+        # assert
+        mock_connection().disarm_alarm.assert_called_with(member_id=0)

@@ -62,3 +62,23 @@ def update(etcd_resource, **kwargs):
         )
 
     etcd_resource.update()
+
+
+@with_etcd_resource(EtcdMember)
+def disarm(etcd_resource, **kwargs):
+    """
+    Disarm alarms of the etcd member
+    :param etcd_resource: Instance of etcd member resource
+    :param kwargs: Configuration must be provided in kwargs or
+    runtime_properties in order to release lock and these configuration
+    are lock_key and lock_hex_uuid
+    """
+
+    etcd_resource.config['member_id'] = get_desired_value(
+            'member_id',
+            kwargs,
+            ctx.instance.runtime_properties,
+            {}
+        )
+
+    etcd_resource.disarm_alarms()

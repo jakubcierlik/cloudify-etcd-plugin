@@ -11,7 +11,6 @@ from cloudify.exceptions import (
 )
 
 
-# TODO: add support for lock, maybe members and alarms?
 class EtcdKeyValuePair(EtcdResource):
     resource_type = 'keyvaluepair'
 
@@ -313,6 +312,29 @@ class EtcdMember(EtcdResource):
             .format(peer_urls, member_id)
         )
         self.connection.update_member(member_id, peer_urls)
+
+    def disarm_alarms(self):
+        member_id = self.config.get('member_id')
+        if member_id == 'all':
+            self.logger.debug(
+                'Disarming all alarms from all members.'
+            )
+            response = self.connection.disarm_alarm(member_id=0)
+            alarms_list = list(response)
+        else:
+            self.logger.debug(
+                'Disarming all alarms from member: {}'
+                .format(member_id)
+            )
+            response = self.connection.disarm_alarm(member_id)
+            alarms_list = list(
+                filter(
+                    lambda x: x.member_id == member_id,
+                    list(response)
+                )
+            )
+        if alarms_list:
+            raise RecoverableError('Some alarms still remaining.')
 
     def delete(self):
         member_id = self.config.get('member_id')

@@ -551,6 +551,54 @@ class MemberTestCase(base.EtcdSDKTestBase):
 
         self.assertEquals(response, expected_members)
 
+    def test_disarm_member(self):
+        config = {
+            'name': b'test_member',
+            'member_id': 18129864113152051069,
+        }
+
+        self.member_instance.config = config
+        Alarm = namedtuple('Alarm', 'alarm_type member_id')
+        alarms = [Alarm(1, 18129864113152051070L)]
+        self.fake_client.disarm_alarm = mock.MagicMock(return_value=alarms)
+
+        self.member_instance.disarm_alarms()
+
+        self.fake_client.disarm_alarm\
+            .assert_called_with(18129864113152051069)
+
+    def test_disarm_all(self):
+        config = {
+            'name': b'test_member',
+            'member_id': 'all',
+        }
+
+        self.member_instance.config = config
+        alarms = []
+        self.fake_client.disarm_alarm = mock.MagicMock(return_value=alarms)
+
+        self.member_instance.disarm_alarms()
+
+        self.fake_client.disarm_alarm\
+            .assert_called_with(member_id=0)
+
+    def test_not_all_disarmed(self):
+        config = {
+            'name': b'test_member',
+            'member_id': 'all',
+        }
+
+        self.member_instance.config = config
+        Alarm = namedtuple('Alarm', 'alarm_type member_id')
+        alarms = [Alarm(1, 18129864113152051070L)]
+        self.fake_client.disarm_alarm = mock.MagicMock(return_value=alarms)
+
+        with self.assertRaises(RecoverableError):
+            self.member_instance.disarm_alarms()
+
+        self.fake_client.disarm_alarm\
+            .assert_called_with(member_id=0)
+
     def test_delete(self):
         config = {
             'name': b'test_member',
