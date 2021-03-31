@@ -175,8 +175,6 @@ node_types:
         create: etcd.etcd_plugin.lock.create
         refresh: etcd.etcd_plugin.lock.refresh
         delete: etcd.etcd_plugin.lock.delete
-      cloudify.interfaces.validation:
-        acquirement: etcd.etcd_plugin.lock.acquirement_validation
 
   cloudify.nodes.etcd.Member:
     derived_from: cloudify.nodes.etcd.Base
