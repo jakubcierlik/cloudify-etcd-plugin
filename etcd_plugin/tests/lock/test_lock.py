@@ -75,20 +75,19 @@ class LockTestCase(EtcdTestBase):
         self._prepare_context_for_operation(
             test_name='LockTestCase',
             ctx_operation_name='cloudify.interfaces.lifecycle.refresh')
-        Lease = namedtuple('Lease', 'refresh')
-        refresh = mock.MagicMock()
-        lease_obj = Lease(refresh)
         self._ctx.instance.runtime_properties['lock_lease_id'] = \
             7668636638277611120L
-        mock_connection().lease = mock.MagicMock(return_value=lease_obj)
+        LeaseKeepAliveResponse = namedtuple('LeaseKeepAliveResponse', 'ID')
+        response = [LeaseKeepAliveResponse(7668636638277611120L)]
+        mock_connection().refresh_lease = \
+            mock.MagicMock(return_value=response)
 
         # act
         lock.refresh(etcd_resource=None)
 
         # assert
-        mock_connection().lease\
-            .assert_called_with(600, lease_id=7668636638277611120L)
-        refresh.assert_called()
+        mock_connection().refresh_lease \
+            .assert_called_with(7668636638277611120L)
 
     def test_acquirement_valid(self, mock_connection):
         # arrange

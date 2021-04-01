@@ -48,7 +48,7 @@ class KeyValuePairTestCase(EtcdTestBase):
         self.assertEqual(self._ctx.instance.runtime_properties['all_keys'],
                          all_expected_keys)
 
-    def test_create_protect_overwrite(self, mock_connection):
+    def test_create_fail_on_overwrite(self, mock_connection):
         # arrange
         self._prepare_context_for_operation(
             test_name='KeyValuePairsTestCase',
@@ -143,6 +143,32 @@ class KeyValuePairTestCase(EtcdTestBase):
 
         # act
         keyvaluepairs.create(etcd_resource=None, all_keys=kv_list)
+
+        # assert
+        self.assertEqual(self._ctx.instance.runtime_properties['all_keys'],
+                         all_expected_keys)
+
+    def test_create_protect_overwrite(self, mock_connection):
+        # arrange
+        self._prepare_context_for_operation(
+            test_name='KeyValuePairsTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.create')
+        mock_connection().get = mock.MagicMock(return_value=(None, None))
+        mock_connection().put = mock.MagicMock()
+        all_expected_keys = [
+            {
+                'fail_on_overwrite': True,
+                'key': 'test_key1',
+                'value': 'test_value1',
+             }, {
+                'fail_on_overwrite': True,
+                'key': 'test_key2',
+                'value': 'test_value2',
+            },
+        ]
+
+        # act
+        keyvaluepairs.create(etcd_resource=None, fail_on_overwrite=True)
 
         # assert
         self.assertEqual(self._ctx.instance.runtime_properties['all_keys'],

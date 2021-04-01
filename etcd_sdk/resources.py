@@ -257,10 +257,15 @@ class EtcdLock(EtcdResource):
             )
 
     def refresh(self):
-        ttl = self.config.get('ttl', None) or self.default_ttl
         lease_id = self.config.get('lock_lease_id')
-        lease_obj = self.connection.lease(ttl, lease_id=lease_id)
-        lease_obj.refresh()
+        response = list(self.connection.refresh_lease(lease_id))
+        if response:
+            self.logger.debug(
+                'Refreshed lock with lease ID: {}'.format(lease_id)
+            )
+        else:
+            raise RecoverableError('Unable to refresh lock with lease ID: {}'
+                                   .format(lease_id))
 
     def delete(self):
         lock_name = self.config.get('lock_name') or self.config.get('name')

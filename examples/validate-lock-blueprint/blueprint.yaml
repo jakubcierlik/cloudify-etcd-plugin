@@ -66,6 +66,27 @@ node_templates:
       - type: cloudify.relationships.depends_on
         target: example-lock1
 
+  example-lock-refresh:
+    type: cloudify.nodes.etcd.Lock
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: etcd.etcd_plugin.lock.refresh
+          inputs:
+            lock_lease_id: { get_attribute: [ example-lock1,
+                                              lock_lease_id ] }
+        delete:
+          implementation: ''
+    properties:
+      client_config: *client_config
+      resource_config:
+        lock_name: { get_input: lock_name }
+        ttl: { get_input: ttl }
+        acquire_timeout: { get_input: acquire_timeout }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: example-lock-validation
+
   example-key-value-pair:
     type: cloudify.nodes.etcd.KeyValuePair
     properties:

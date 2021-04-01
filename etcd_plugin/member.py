@@ -14,6 +14,7 @@ def create(etcd_resource):
     :param etcd_resource: Instance of etcd member resource
     """
     new_member = etcd_resource.create()
+    ctx.instance.runtime_properties['member_id'] = new_member.id
     ctx.instance.runtime_properties['peer_urls'] = new_member.peer_urls
 
 

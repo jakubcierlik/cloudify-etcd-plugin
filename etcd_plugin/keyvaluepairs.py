@@ -27,6 +27,9 @@ def create(etcd_resource, **kwargs):
     """
     Create key-value pairs and put it in etcd store
     :param etcd_resource: Instance of etcd key-value pairs resource
+    :param kwargs: Configuration must be provided in kwargs or
+    runtime_properties in order to release lock and and it
+    is fail_on_overwrite
     """
     ctx.instance.runtime_properties['all_keys'] = \
         ctx.instance.runtime_properties.get('all_keys') or []
@@ -56,7 +59,7 @@ def create(etcd_resource, **kwargs):
             resource_config=resource_config,
             logger=etcd_resource.logger
         )
-        key, value = etcd_key_value_pair.create()
+        etcd_key_value_pair.create()
         ctx.instance.runtime_properties['all_keys'].append(
             kvpair.get('kvpair'))
 
