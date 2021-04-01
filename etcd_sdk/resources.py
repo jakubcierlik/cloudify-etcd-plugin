@@ -223,20 +223,27 @@ class EtcdLock(EtcdResource):
         acquire_timeout = self.config.get('acquire_timeout', None) \
             or self.default_acquire_timeout
         lock_obj = self.connection.lock(lock_name, ttl=ttl)
+        recoverable_error = RecoverableError(
+            'Failed to acquire lock: {}'
+            .format(lock_obj.name)
+        )
         self.logger.debug(
             'Acquiring lock "{}" with time-to-live: {} s'
             .format(lock_name, ttl)
         )
-        if lock_obj.acquire(timeout=acquire_timeout):
-            self.logger.debug(
-                'Acquired lock "{}" with time-to-live: {} s'
-                .format(lock_obj.name, lock_obj.ttl)
-            )
-            return lock_obj
-        else:
-            raise RecoverableError(
-                'Failed to acquire lock: {}'
-                .format(lock_obj.name))
+        try:
+            if lock_obj.acquire(timeout=acquire_timeout):
+                self.logger.debug(
+                    'Acquired lock "{}" with time-to-live: {} s'
+                    .format(lock_obj.name, lock_obj.ttl)
+                )
+                return lock_obj
+            else:
+                raise recoverable_error
+        # lock_obj.acquire: handle tenacity wait gets an unexpected keyword
+        # argument 'retry_state'
+        except TypeError:
+            raise recoverable_error
 
     def validate_lock_acquired(self):
         lock_name = self.config.get('lock_name') or self.config.get('name')

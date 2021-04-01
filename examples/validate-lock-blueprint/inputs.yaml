@@ -1,0 +1,5 @@
+key: /install/example-lock1
+value: success
+lock_name: example_lock
+ttl: 20
+acquire_timeout: 3

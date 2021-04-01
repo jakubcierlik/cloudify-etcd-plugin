@@ -50,7 +50,8 @@ def acquirement_validation(etcd_resource, **kwargs):
     etcd_resource.validate_lock_acquired()
 
     ctx.logger.info(
-        'Lock "{}" is acquired.'.format(etcd_resource.name)
+        'The lock under key "{}" is acquired.'
+        .format(etcd_resource.config['key'])
     )
 
 

@@ -1,0 +1,78 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - https://cloudify.co/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-etcd-plugin
+
+inputs:
+  key:
+    type: string
+  value:
+    type: string
+  lock_name:
+    type: string
+  ttl:
+    type: integer
+  acquire_timeout:
+    type: integer
+
+dsl_definitions:
+  client_config: &client_config
+    host: { get_secret: etcd_host }
+    port: { get_secret: etcd_port }
+
+node_templates:
+
+  example-lock1:
+    type: cloudify.nodes.etcd.Lock
+    properties:
+      client_config: *client_config
+      resource_config:
+        lock_name: { get_input: lock_name }
+        ttl: { get_input: ttl }
+        acquire_timeout: { get_input: acquire_timeout }
+
+  example-lock2:
+    type: cloudify.nodes.etcd.Lock
+    properties:
+      client_config: *client_config
+      resource_config:
+        lock_name: { get_input: lock_name }
+        ttl: { get_input: ttl }
+        acquire_timeout: { get_input: acquire_timeout }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: example-lock1
+
+  example-lock-validation:
+    type: cloudify.nodes.etcd.Lock
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: etcd.etcd_plugin.lock.acquirement_validation
+          inputs:
+            lock_key: { concat: ['/locks/', { get_input: lock_name }] }
+            lock_hex_uuid: { get_attribute: [ example-lock1,
+                                              lock_hex_uuid ] }
+        delete:
+          implementation: ''
+    properties:
+      client_config: *client_config
+      resource_config:
+        lock_name: { get_input: lock_name }
+        ttl: { get_input: ttl }
+        acquire_timeout: { get_input: acquire_timeout }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: example-lock1
+
+  example-key-value-pair:
+    type: cloudify.nodes.etcd.KeyValuePair
+    properties:
+      client_config: *client_config
+      resource_config:
+        key: { get_input: key }
+        value: { get_input: value }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: example-lock-validation
