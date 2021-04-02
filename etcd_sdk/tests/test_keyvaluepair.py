@@ -438,14 +438,16 @@ class LockTestCase(base.EtcdSDKTestBase):
 
         self.lock_instance.config = config
 
-        uuid_bytes = '%C\xdc\x18\x8dF\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
-        self.fake_client.get = mock.MagicMock(return_value=(uuid_bytes, None))
+        self.fake_client.transaction = mock.MagicMock(
+            return_value=(True, None))
+        self.fake_client.transactions = mock.MagicMock()
         self.fake_client.delete = mock.MagicMock(return_value=True)
 
         response = self.lock_instance.delete()
 
         self.assertTrue(response)
-        self.fake_client.delete.assert_called_with('/locks/test_lock')
+        self.fake_client.transactions.delete\
+            .assert_called_with('/locks/test_lock')
 
     def test_delete_not_acquired(self):
         config = {
@@ -458,12 +460,16 @@ class LockTestCase(base.EtcdSDKTestBase):
 
         self.lock_instance.config = config
 
+        self.fake_client.transaction = mock.MagicMock(
+            return_value=(False, None))
+        self.fake_client.transactions = mock.MagicMock()
         self.fake_client.get = mock.MagicMock(return_value=(None, None))
         self.fake_client.delete = mock.MagicMock(return_value=True)
 
         response = self.lock_instance.delete()
 
         self.assertFalse(response)
+        self.fake_client.transactions.assert_not_called()
 
     def test_delete_another_acquirement(self):
         config = {
@@ -478,6 +484,9 @@ class LockTestCase(base.EtcdSDKTestBase):
 
         another_uuid_bytes = \
             'Q\xae\x91Z\x8dN\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
+        self.fake_client.transaction = mock.MagicMock(
+            return_value=(False, None))
+        self.fake_client.transactions = mock.MagicMock()
         self.fake_client.get = mock.MagicMock(
             return_value=(another_uuid_bytes, None))
         self.fake_client.delete = mock.MagicMock(return_value=True)
@@ -486,7 +495,7 @@ class LockTestCase(base.EtcdSDKTestBase):
 
         self.assertFalse(response)
         # any modification may exhibit undefined behavior
-        self.fake_client.delete.assert_not_called()
+        self.fake_client.transactions.assert_not_called()
 
 
 class MemberTestCase(base.EtcdSDKTestBase):

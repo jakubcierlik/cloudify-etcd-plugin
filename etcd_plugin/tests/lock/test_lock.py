@@ -57,18 +57,20 @@ class LockTestCase(EtcdTestBase):
         self._prepare_context_for_operation(
             test_name='LockTestCase',
             ctx_operation_name='cloudify.interfaces.lifecycle.delete')
-        bytes_uuid = '%C\xdc\x18\x8dF\x11\xeb\xa1\xfd\xa9Q\xd4\xe5\xfd\xb5'
         self._ctx.instance.runtime_properties['lock_key'] = '/locks/test_lock'
         self._ctx.instance.runtime_properties['lock_hex_uuid'] = \
             '2543dc188d4611eba1fda951d4e5fdb5'
-        mock_connection().get = mock.MagicMock(return_value=(bytes_uuid, None))
+        mock_connection().transaction = mock.MagicMock(
+            return_value=(True, None))
+        mock_connection().transactions = mock.MagicMock()
         mock_connection().delete = mock.MagicMock(return_value=True)
 
         # act
         lock.delete(etcd_resource=None)
 
         # assert
-        mock_connection().delete.assert_called_with('/locks/test_lock')
+        mock_connection().transactions.delete\
+            .assert_called_with('/locks/test_lock')
 
     def test_refresh(self, mock_connection):
         # arrange

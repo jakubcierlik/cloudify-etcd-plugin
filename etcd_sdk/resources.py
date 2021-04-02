@@ -271,16 +271,19 @@ class EtcdLock(EtcdResource):
         lock_name = self.config.get('lock_name') or self.config.get('name')
         key = self.config.get('key')
         lock_bytes_uuid = self.config.get('lock_bytes_uuid')
+        status, _ = self.connection.transaction(
+            compare=[
+                self.connection.transactions.value(key) == lock_bytes_uuid
+            ],
+            success=[self.connection.transactions.delete(key)],
+            failure=[]
+        )
+        if status:
+            self.logger.debug(
+                'Deleted lock "{}"'.format(lock_name)
+            )
+            return True
         value, _ = self.connection.get(key)
-        if value == lock_bytes_uuid:
-            self.logger.debug(
-                'Releasing lock: {}'.format(lock_name)
-            )
-            response = self.connection.delete(key)
-            self.logger.debug(
-                'Deleted lock "{}" with result: {}'.format(lock_name, response)
-            )
-            return response
         if value:
             self.logger.info(
                 'Lock "{}" is not acquired, maybe another one is already'
