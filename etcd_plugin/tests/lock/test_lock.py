@@ -4,7 +4,7 @@ import mock
 
 # Local imports
 from etcd_plugin.tests.base import EtcdTestBase
-from etcd_plugin import lock
+from etcd_plugin.resources import lock
 from cloudify.exceptions import NonRecoverableError
 
 

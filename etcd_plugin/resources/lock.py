@@ -4,7 +4,7 @@ from uuid import UUID
 
 # Local imports
 from . import get_desired_value
-from etcd_plugin.utils import with_etcd_resource
+from etcd_plugin.decorators import with_etcd_resource
 from etcd_sdk.resources import EtcdLock
 
 

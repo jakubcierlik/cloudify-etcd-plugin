@@ -4,7 +4,7 @@ import mock
 
 # Local imports
 from etcd_plugin.tests.base import EtcdTestBase
-from etcd_plugin import keyvaluepairs
+from etcd_plugin.resources import keyvaluepairs
 from cloudify.exceptions import RecoverableError
 
 

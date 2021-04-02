@@ -20,15 +20,15 @@ Node types:
   
   Create/update/delete member from etcd cluster, disarm alarm raised by one member or all members.
 
-##Runtime properties:
-####KeyValuePair
+## Runtime properties
+#### KeyValuePair
 
 | key name   | value type |
 | ---------- | ---------- |
 | key        | string     |
 | value      | string     |
 
-####KeyValuePairs
+#### KeyValuePairs
 
 | key name      | sub-key name      | value type |
 | ------------- | ----------------- | ---------- |
@@ -36,10 +36,10 @@ Node types:
 | all_keys      | key               | string     |
 | all_keys      | value             | string     |
 
-####WatchKey
+#### WatchKey
 no runtime properties
 
-####Lock
+#### Lock
 
 | key name      | value type |
 | ------------- | ---------- |
@@ -47,7 +47,7 @@ no runtime properties
 | lock_lease_id | long       |
 | lock_hex_uuid | string     |
 
-####Member
+#### Member
 
 | key name  | value type      |
 | --------- | --------------- |

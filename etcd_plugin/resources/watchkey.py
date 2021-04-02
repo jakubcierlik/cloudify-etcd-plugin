@@ -1,5 +1,5 @@
 # Local imports
-from etcd_plugin.utils import with_etcd_resource
+from etcd_plugin.decorators import with_etcd_resource
 from etcd_sdk.resources import WatchKey
 
 
