@@ -137,8 +137,8 @@ node_types:
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: etcd.etcd_plugin.keyvaluepair.create
-        delete: etcd.etcd_plugin.keyvaluepair.delete
+        create: etcd.etcd_plugin.resources.keyvaluepair.create
+        delete: etcd.etcd_plugin.resources.keyvaluepair.delete
 
   cloudify.nodes.etcd.KeyValuePairs:
     derived_from: cloudify.nodes.etcd.Base
@@ -150,8 +150,8 @@ node_types:
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: etcd.etcd_plugin.keyvaluepairs.create
-        delete: etcd.etcd_plugin.keyvaluepairs.delete
+        create: etcd.etcd_plugin.resources.keyvaluepairs.create
+        delete: etcd.etcd_plugin.resources.keyvaluepairs.delete
 
   cloudify.nodes.etcd.WatchKey:
     derived_from: cloudify.nodes.etcd.Base
@@ -161,8 +161,8 @@ node_types:
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: etcd.etcd_plugin.watchkey.watch
-        delete: etcd.etcd_plugin.watchkey.delete
+        create: etcd.etcd_plugin.resources.watchkey.watch
+        delete: etcd.etcd_plugin.resources.watchkey.delete
 
   cloudify.nodes.etcd.Lock:
     derived_from: cloudify.nodes.etcd.Base
@@ -172,9 +172,9 @@ node_types:
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: etcd.etcd_plugin.lock.create
-        refresh: etcd.etcd_plugin.lock.refresh
-        delete: etcd.etcd_plugin.lock.delete
+        create: etcd.etcd_plugin.resources.lock.create
+        refresh: etcd.etcd_plugin.resources.lock.refresh
+        delete: etcd.etcd_plugin.resources.lock.delete
 
   cloudify.nodes.etcd.Member:
     derived_from: cloudify.nodes.etcd.Base
@@ -184,8 +184,8 @@ node_types:
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: etcd.etcd_plugin.member.create
-        delete: etcd.etcd_plugin.member.delete
+        create: etcd.etcd_plugin.resources.member.create
+        delete: etcd.etcd_plugin.resources.member.delete
       cloudify.interfaces.operations:
-        update: etcd.etcd_plugin.member.update
-        disarm: etcd.etcd_plugin.member.disarm
+        update: etcd.etcd_plugin.resources.member.update
+        disarm: etcd.etcd_plugin.resources.member.disarm
