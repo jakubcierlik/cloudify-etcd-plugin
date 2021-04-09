@@ -15,7 +15,7 @@ def create(etcd_resource):
     """
     new_member = etcd_resource.create()
     ctx.instance.runtime_properties['member_id'] = new_member.id
-    ctx.instance.runtime_properties['peer_urls'] = new_member.peer_urls
+    ctx.instance.runtime_properties['peer_urls'] = list(new_member.peer_urls)
 
 
 @with_etcd_resource(EtcdMember)

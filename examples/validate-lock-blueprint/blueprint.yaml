@@ -49,7 +49,7 @@ node_templates:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: etcd.etcd_plugin.lock.acquirement_validation
+          implementation: etcd.etcd_plugin.resources.lock.acquirement_validation
           inputs:
             lock_key: { concat: ['/locks/', { get_input: lock_name }] }
             lock_hex_uuid: { get_attribute: [ example-lock1,
@@ -71,7 +71,7 @@ node_templates:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: etcd.etcd_plugin.lock.refresh
+          implementation: etcd.etcd_plugin.resources.lock.refresh
           inputs:
             lock_lease_id: { get_attribute: [ example-lock1,
                                               lock_lease_id ] }
